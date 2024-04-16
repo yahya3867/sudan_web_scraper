@@ -1,0 +1,10 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"python.defaultInterpreterPath": "/Users/tayvenstover/opt/anaconda3/envs/sudan_web_scraper/bin/python"
+	}
+}
