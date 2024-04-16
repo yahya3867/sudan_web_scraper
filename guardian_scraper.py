@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 
 config = dotenv_values(".env")
 
-URL = f'https://content.guardianapis.com/world/sudan?from-date2023-04-10&tag=war&api-key={config["GUARDIAN_API_KEY"]}'
+URL = f'https://content.guardianapis.com/world/sudan?from-date2023-04-10&tag=war,enslavement&api-key={config["GUARDIAN_API_KEY"]}'
 
 print(URL)
 response = requests.get(URL)
@@ -22,4 +22,25 @@ for i in range(len(response.json()['response']['leadContent'])):
         'headline': headline,
         'date': date
     })
+
+
+import requests
+from bs4 import BeautifulSoup
+
+# URL of the webpage you want to scrape
+url = 'https://www.theguardian.com/world/2024/feb/17/sudan-armed-forces-omdurman-advance'
+
+# Send a GET request to the URL
+response = requests.get(url)
+
+if response.status_code == 200:
+    soup = BeautifulSoup(response.text, 'html.parser')
+    
+    # Find all paragraph tags and print their content
+    paragraphs = soup.find_all('p', class_='dcr-4cudl2')
+    for paragraph in paragraphs:
+        print(paragraph.text)
+else:
+    print('Failed to retrieve the webpage')
+
 
