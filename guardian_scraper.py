@@ -1,46 +1,73 @@
 from dotenv import dotenv_values
 import requests
 from bs4 import BeautifulSoup
+import pandas as pd
+import openpyxl
 
 config = dotenv_values(".env")
 
-URL = f'https://content.guardianapis.com/world/sudan?from-date2023-04-10&tag=war,enslavement&api-key={config["GUARDIAN_API_KEY"]}'
+URL = f'https://content.guardianapis.com/search?from-date=2023-04-10&tag=world/sudan,global-development/conflict-and-development&api-key={config["GUARDIAN_API_KEY"]}'
 
-print(URL)
-response = requests.get(URL)
+initial_response = requests.get(URL)
 
-response_items = []
+num_articles = initial_response.json()['response']['total']
 
-for i in range(len(response.json()['response']['leadContent'])):
-    api_url = response.json()['response']['leadContent'][i]['apiUrl'] + '?api-key=' + config['GUARDIAN_API_KEY']
-    web_url = response.json()['response']['leadContent'][i]['webUrl']
-    headline = response.json()['response']['leadContent'][i]['webTitle']
-    date = response.json()['response']['leadContent'][i]['webPublicationDate']
-    response_items.append({
-        'api_url': api_url,
-        'web_url': web_url,
-        'headline': headline,
-        'date': date
-    })
+articles = []
 
+def page_articles(url, params):
+    response_items = []
 
-import requests
-from bs4 import BeautifulSoup
+    response = requests.get(url, params=params)
+    for i in range(len(response.json()['response']['results'])):
+        api_url = response.json()['response']['results'][i]['apiUrl'] + '?api-key=' + config['GUARDIAN_API_KEY']
+        web_url = response.json()['response']['results'][i]['webUrl']
+        headline = response.json()['response']['results'][i]['webTitle']
+        date = response.json()['response']['results'][i]['webPublicationDate']
+        body = response.json()['response']['results'][i]['fields']['body']
+        response_items.append({
+            'api_url': api_url,
+            'web_url': web_url,
+            'headline': headline,
+            'date': date,
+            'body': body
+        })
 
-# URL of the webpage you want to scrape
-url = 'https://www.theguardian.com/world/2024/feb/17/sudan-armed-forces-omdurman-advance'
+    return response_items
 
-# Send a GET request to the URL
-response = requests.get(url)
+def get_articles():
+    if num_articles <= 200:
+        params = {
+            'from-date': '2023-04-10',
+            'page-size': num_articles,
+            'tag': 'world/sudan,global-development/conflict-and-development',
+            'api-key': config['GUARDIAN_API_KEY'],
+            'show-fields': 'body'
+        }
 
-if response.status_code == 200:
-    soup = BeautifulSoup(response.text, 'html.parser')
-    
-    # Find all paragraph tags and print their content
-    paragraphs = soup.find_all('p', class_='dcr-4cudl2')
-    for paragraph in paragraphs:
-        print(paragraph.text)
-else:
-    print('Failed to retrieve the webpage')
+        url = 'https://content.guardianapis.com/search'
+        
+        articles = page_articles(url, params)
 
+        return articles
 
+    else:
+        num_full_pages = num_articles // 200
+        final_page_length = num_articles % 200
+
+        URL = f'https://content.guardianapis.com/search?from-date=2023-04-10&page-' \
+            f'size=200&tag=world/sudan,global-development/conflict-and-development&api-key={config["GUARDIAN_API_KEY"]}'
+        for i in range(num_full_pages):
+            
+            articles += page_articles(URL)
+
+        URL = f'https://content.guardianapis.com/search?from-date=2023-04-10&page-' \
+            f'size={final_page_length}&tag=world/sudan,global-development/conflict-and-development&api-key={config["GUARDIAN_API_KEY"]}'
+        
+        articles += page_articles(URL)
+
+        return articles
+
+articles = get_articles()
+df = pd.DataFrame(articles)
+excel_writer = pd.ExcelWriter('file.xlsx')
+df.to_excel('file.xlsx')

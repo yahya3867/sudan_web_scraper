@@ -1,10 +1,11 @@
 # conda env create -f environment.yml
+
 name: sudan_web_scraper
 channels:
   - conda-forge
 dependencies:
   - python=3.11
   - pip:
-      - requests
-      - dotenv
-      - beautifulsoup4
+    - requests
+    - dotenv
+    - beautifulsoup4
