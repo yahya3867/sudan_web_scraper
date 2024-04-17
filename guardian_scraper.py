@@ -70,4 +70,4 @@ def get_articles():
 articles = get_articles()
 df = pd.DataFrame(articles)
 excel_writer = pd.ExcelWriter('file.xlsx')
-df.to_excel('file.xlsx')
+df.to_excel('guardian_articles.xlsx')
