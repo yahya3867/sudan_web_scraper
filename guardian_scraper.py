@@ -1,31 +1,26 @@
-from dotenv import dotenv_values
 import requests
 import pandas as pd
-from scraping_tools import parse_articles
+from scraping_tools import parse_articles, store_to_mongo
+import os
+from datetime import datetime, timedelta
 
-CONFIG = dotenv_values(".env")
+DEPLOYMENT = os.getenv('DEPLOYMENT')
+API_KEY = os.getenv('GUARDIAN_API_KEY')
 CATEGORIES = ['war crimes', 'war', 'conflict', 'violence', 'military', 'rebel', 'insurgency', 'ceasefires', 'humanitarian crises',
               'rape', 'physical abuse', 'sexual abuse', 'child soldiers', 'child abuse', 'child prostitution', 'torture',
               'bombings', 'weapons & arms', 'gender-based violence']
-URL = f'https://content.guardianapis.com/search?q={",".join(CATEGORIES)}&from-date=2023-04-10&tag=world/sudan&api-key={CONFIG["GUARDIAN_API_KEY"]}'
-
-initial_response = requests.get(URL)
-
-num_articles = initial_response.json()['response']['total']
-
-articles = []
 
 # Retrieves articles from a single page with given url and parameters
 def page_articles(url, params):
     # List to store articles
     response_items = []
-    response = requests.get(url, params=params)
+    response = requests.get(url, params=params).json()
 
     # Get articles from response
-    for i in range(len(response.json()['response']['results'])):
-        result = response.json()['response']['results'][i]
+    for i in range(len(response['response']['results'])):
+        result = response['response']['results'][i]
 
-        api_url = result['apiUrl'] + '?api-key=' + CONFIG['GUARDIAN_API_KEY']
+        api_url = result['apiUrl'] + '?api-key=' + API_KEY
         web_url = result['webUrl']
         headline = result['webTitle']
         date = result['webPublicationDate']
@@ -52,15 +47,15 @@ def page_articles(url, params):
     return response_items
 
 # Formats api urls and calls 'page_articles' to get articles
-def get_articles():
+def get_articles(num_articles, date = '2023-04-10'):
     # Checks if num articles is less than or equal to 200
     if num_articles <= 200:
         params = {
-            'from-date': '2023-04-10',
+            'from-date': date,
             'page-size': num_articles,
             'q': ','.join(CATEGORIES),
             'tag': 'world/sudan',
-            'api-key': CONFIG['GUARDIAN_API_KEY'],
+            'api-key': API_KEY,
             'show-fields': 'body',
             'show-elements': 'image'
         }
@@ -76,11 +71,11 @@ def get_articles():
 
         for i in range(num_full_pages):
             params = {
-                'from-date': '2023-04-10',
+                'from-date': date,
                 'page-size': 200,
                 'q': ','.join(CATEGORIES),
                 'tag': 'world/sudan',
-                'api-key': CONFIG['GUARDIAN_API_KEY'],
+                'api-key': API_KEY,
                 'show-fields': 'body',
                 'show-elements': 'image',
                 'page': i + 1
@@ -90,11 +85,11 @@ def get_articles():
             articles += page_articles(url, params)
 
         params = {
-            'from-date': '2023-04-10',
+            'from-date': date,
             'page-size': final_page_length,
             'q': ','.join(CATEGORIES),
             'tag': 'world/sudan',
-            'api-key': CONFIG['GUARDIAN_API_KEY'],
+            'api-key': API_KEY,
             'show-fields': 'body',
             'show-elements': 'image',
             'page': num_full_pages + 1
@@ -108,13 +103,38 @@ def get_articles():
 
 # Run Program
 if __name__ == '__main__':
-    articles = get_articles()
+    # If in deploypemt, get articles from yesterday
+    yesterday = datetime.now() - timedelta(days=1) # Yesterday's date
+    formatted_yesterday = yesterday.strftime('%Y-%m-%d')
 
-    # Operate on dataframe
-    df = pd.DataFrame(articles)
-    df['date'] = pd.to_datetime(df['date'])
-    df.sort_values(by='date')
-    df['date'] = df['date'].dt.tz_localize(None) # Remove timezone info for excel compatibility
+    if int(DEPLOYMENT):
+        URL = f'https://content.guardianapis.com/search?q={",".join(CATEGORIES)}&from-date={formatted_yesterday}&tag=world/sudan&api-key={API_KEY}'
 
-    excel_writer = pd.ExcelWriter('News_Articles/guardian_articles.xlsx')
-    df.to_excel('News_Articles/guardian_articles.xlsx')
+        # Get the initial response to get the number of articles
+        initial_response = requests.get(URL)
+        num_articles = initial_response.json()['response']['total']
+
+        articles = get_articles(num_articles, formatted_yesterday)
+    
+    # If not in deployment, get articles from 2023-04-10
+    else:
+        URL = f'https://content.guardianapis.com/search?q={",".join(CATEGORIES)}&from-date=2023-04-10&to-date={formatted_yesterday}&tag=world/sudan&api-key={API_KEY}'
+
+        # Get the initial response to get the number of articles
+        initial_response = requests.get(URL)
+        num_articles = initial_response.json()['response']['total']
+
+        articles = get_articles(num_articles)
+
+    if len(articles) == 0:
+        pass # TODO discuss what should be done in the case of no articles?
+
+    else:
+        status = store_to_mongo(articles)
+
+        if status:
+            print('Articles stored successfully.')
+
+        else:
+            print('Error storing articles.') # we can try to error response here
+
