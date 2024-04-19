@@ -7,7 +7,6 @@ on:
 
 jobs:
   build:
-    secrets: inherit
     runs-on: ubuntu-latest
 
     steps:
@@ -23,6 +22,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Sudan API Scraper
+    - name: Guardian API Scraper
+      env:
+        GUARDIAN_API_KEY: ${{ secrets.GUARDIAN_API_KEY }}
+        MONGO_URI: ${{ secrets.MONGO_URI }}
+        MONGO_DB: ${{ secrets.MONGO_DB }}
+        MONGO_COLLECTION: ${{ secrets.MONGO_COLLECTION }}
+        DEPLOYMENT: ${{ secrets.DEPLOYMENT }}
       run: |
         python guardian_scraper.py
