@@ -8,7 +8,7 @@ DEPLOYMENT = os.getenv('DEPLOYMENT')
 API_KEY = os.getenv('GUARDIAN_API_KEY')
 CATEGORIES = ['war crimes', 'war', 'conflict', 'violence', 'military', 'rebel', 'insurgency', 'ceasefires', 'humanitarian crises',
               'rape', 'physical abuse', 'sexual abuse', 'child soldiers', 'child abuse', 'child prostitution', 'torture',
-              'bombings', 'weapons & arms', 'gender-based violence']
+              'bombings', 'weapons & arms', 'gender-based violence', 'khartoum', 'darfur', 'sudan', 'south sudan', 'north sudan']
 
 # Retrieves articles from a single page with given url and parameters
 def page_articles(url, params):

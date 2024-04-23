@@ -17,6 +17,7 @@ def parse_articles(articles: list):
 
 # Connects to MongoDB and stores articles
 def store_to_mongo(articles: list):
+    # Attempt to connect to MongoDB
     try:
         myclient = pymongo.MongoClient(os.getenv('MONGO_URI'))
         mydb = myclient[os.getenv('MONGO_DB')]
@@ -25,6 +26,8 @@ def store_to_mongo(articles: list):
     except Exception as e:
         print('Error connecting to MongoDB:', e)
         return False
+    
+    # Attempt to store articles
     try:
         mycol.insert_many(articles)
         return True
