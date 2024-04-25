@@ -1,5 +1,4 @@
 import requests
-import pandas as pd
 from scraping_tools import parse_articles, store_to_mongo
 import os
 from datetime import datetime, timedelta
