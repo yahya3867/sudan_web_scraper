@@ -4,7 +4,18 @@ import os
 import itertools
 from datetime import datetime
 from scraping_tools import store_to_mongo
-import json 
+import json
+from multiprocessing import Pool
+
+# Selenium imports
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.service import Service
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
 
 # List to dict -> ['some headline', 'some url', 'some date'] -> {'headline': 'some headline', 'web-url': 'some url', 'date': 'some date'}
 # https://sudantribune.com/post_tag-sitemap.xml -- categories found here
@@ -20,7 +31,7 @@ def get_articles_from_page(soup) -> list:
     for post in post_items:
         headline = post.find('h3', 'entry__title').text.replace('\n', '')
         web_url = post.find('a')['href']
-        date = post.find('li', 'entry__meta-date').text #TODO needs to be converted to datetime
+        date = post.find('li', 'entry__meta-date').text
         article_data = [headline, web_url, date]
         articles.append(article_data)
 
@@ -28,6 +39,8 @@ def get_articles_from_page(soup) -> list:
 
 # Used to speed up the initial run wont be used in deployment
 def get_articles_by_tag(tag) -> list:
+    articles = []
+
     url = f'https://sudantribune.com/articletag/{tag}'
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
@@ -62,41 +75,55 @@ def remove_non_relevant_articles(articles) -> list:
     for article in articles:
         article_date = datetime.strptime(article[2], date_format)
 
-        if article_date < relevant_date:
-            articles.remove(article)
+    return indices_to_remove
 
-    return articles
+def wait_for_correct_image(driver, locator, placeholder_src, timeout=10):
+    try:
+        # Wait until the src attribute of the image is not the placeholder's src
+        WebDriverWait(driver, timeout).until(
+            lambda driver: driver.find_element(*locator).get_attribute('src') != placeholder_src
+        )
+        return driver.find_element(*locator)
+    
+    except TimeoutException:
+        return None
 
-def scrape_article(url) -> dict:
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, 'html.parser')
-
-    body = soup.find('div', class_='wp_content')
-    content = body.find_all('p')
-
-    text_list = []
-
-    for paragraph in content:
-        text_list.append(paragraph.get_text())
-
-    text = '\n'.join(text_list)
-    raw_text = text.encode('ascii', 'ignore').decode('ascii').replace('\n', '')
+def scrape_article(url):
+    # Setup the driver
+    options = Options()
+    options.add_argument("--headless=new")
+    driver = webdriver.Chrome(options=options)
+    driver.get(url)
+    locator = (By.CSS_SELECTOR, '.attachment-str-singular.size-str-singular.lazy-img.wp-post-image')
+    placeholder_src = 'https://sudantribune.com/wp-content/themes/sudantribune/images/no-image.jpg'
 
     try:
-        image_url = soup.find('img', class_='attachment-str-singular size-str-singular lazy-img wp-post-image')['src']
+        # Wait for the content of the article to load
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, 'wp_content'))
+        )
 
-        if image_url == 'https://sudantribune.com/wp-content/themes/sudantribune/images/no-image.jpg':
+        # Extract text
+        content = driver.find_elements(By.CSS_SELECTOR, '.wp_content p')
+        text_list = [paragraph.text for paragraph in content]
+        raw_text = ' '.join(text_list).encode('ascii', 'ignore').decode('ascii')
+
+        # Try to get the image URL
+        image = wait_for_correct_image(driver, locator, placeholder_src)
+
+        if image:
+            image_url = image.get_attribute('src')
+            print(image_url)
+        else:
             image_url = None
-
-    except TypeError:
-        image_url = None
+    finally:
+        driver.quit()
 
     return [raw_text, image_url]
 
-
 if __name__ == '__main__':
     articles = []
-    TAGS = ['rsf']
+
     if int(DEPLOYMENT):
         for tag in TAGS:
             url = f'https://sudantribune.com/articletag/{tag}'
@@ -108,11 +135,13 @@ if __name__ == '__main__':
     else:
         for tag in TAGS:
             articles += get_articles_by_tag(tag)
+    print('unfiltered articles:', len(articles))
 
+    # Remove duplicates and articles that are not relevant by date
     articles.sort()
     articles = list(k for k, _ in itertools.groupby(articles)) # Remove duplicates
-
     articles = remove_non_relevant_articles(articles) # Remove articles that are not relevant by date
+    print('filtered articles:', len(articles))
 
     # Now that we have our valid list of articles, we can start processing them
     for article in articles:
