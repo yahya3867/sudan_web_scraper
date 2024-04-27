@@ -30,4 +30,4 @@ jobs:
         MONGO_COLLECTION: ${{ secrets.MONGO_COLLECTION }}
         DEPLOYMENT: ${{ secrets.DEPLOYMENT }}
       run: |
-        python Crawlers/guardian_scraper.py
+        python Crawlers/guardian_crawler.py

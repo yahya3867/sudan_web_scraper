@@ -23,6 +23,12 @@ TAGS = ['arbitrary-detention', 'darfur-conflict', 'darfur-conflicthumanitarian',
 'darfur-groups', 'darfur-peacekeeping-mission-unamid', 'human-rights', 'humanitarian',
 'kidnapping', 'rsf']
 DEPLOYMENT = os.getenv('DEPLOYMENT')
+# Setup the DRIVER
+options = Options()
+options.add_argument("--headless=new")
+DRIVER = webdriver.Chrome(options=options)
+LOCATOR = (By.CSS_SELECTOR, '.attachment-str-singular.size-str-singular.lazy-img.wp-post-image')
+PLACEHOLDER_SRC = 'https://sudantribune.com/wp-content/themes/sudantribune/images/no-image.jpg'
 
 def get_articles_from_page(soup) -> list:
     post_items = soup.find_all('div', class_='post-item col-md-4')
@@ -75,41 +81,38 @@ def remove_non_relevant_articles(articles) -> list:
     for article in articles:
         article_date = datetime.strptime(article[2], date_format)
 
-    return indices_to_remove
+        if article_date < relevant_date:
+            articles.remove(article)
+            
+    return articles
 
-def wait_for_correct_image(driver, locator, placeholder_src, timeout=10):
+def wait_for_correct_image(DRIVER, LOCATOR, PLACEHOLDER_SRC, timeout=10):
     try:
         # Wait until the src attribute of the image is not the placeholder's src
-        WebDriverWait(driver, timeout).until(
-            lambda driver: driver.find_element(*locator).get_attribute('src') != placeholder_src
+        WebDriverWait(DRIVER, timeout).until(
+            lambda DRIVER: DRIVER.find_element(*LOCATOR).get_attribute('src') != PLACEHOLDER_SRC
         )
-        return driver.find_element(*locator)
+        return DRIVER.find_element(*LOCATOR)
     
     except TimeoutException:
         return None
 
 def scrape_article(url):
-    # Setup the driver
-    options = Options()
-    options.add_argument("--headless=new")
-    driver = webdriver.Chrome(options=options)
-    driver.get(url)
-    locator = (By.CSS_SELECTOR, '.attachment-str-singular.size-str-singular.lazy-img.wp-post-image')
-    placeholder_src = 'https://sudantribune.com/wp-content/themes/sudantribune/images/no-image.jpg'
+    DRIVER.get(url)
 
     try:
         # Wait for the content of the article to load
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(DRIVER, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, 'wp_content'))
         )
 
         # Extract text
-        content = driver.find_elements(By.CSS_SELECTOR, '.wp_content p')
+        content = DRIVER.find_elements(By.CSS_SELECTOR, '.wp_content p')
         text_list = [paragraph.text for paragraph in content]
         raw_text = ' '.join(text_list).encode('ascii', 'ignore').decode('ascii')
 
         # Try to get the image URL
-        image = wait_for_correct_image(driver, locator, placeholder_src)
+        image = wait_for_correct_image(DRIVER, LOCATOR, PLACEHOLDER_SRC)
 
         if image:
             image_url = image.get_attribute('src')
@@ -117,7 +120,7 @@ def scrape_article(url):
         else:
             image_url = None
     finally:
-        driver.quit()
+        DRIVER.quit()
 
     return [raw_text, image_url]
 
@@ -141,12 +144,14 @@ if __name__ == '__main__':
     articles.sort()
     articles = list(k for k, _ in itertools.groupby(articles)) # Remove duplicates
     articles = remove_non_relevant_articles(articles) # Remove articles that are not relevant by date
-    print('filtered articles:', len(articles))
+    num_articles = len(articles)
+    print('filtered articles:', num_articles)
 
     # Now that we have our valid list of articles, we can start processing them
-    for article in articles:
-        article_data = scrape_article(article[1])
-        article += article_data
+    for i in range(len(articles)):
+        print('Processing:', articles[i][1], f'{i}/{num_articles}')
+        article_data = scrape_article(articles[i][1])
+        articles[i] += article_data
 
     db_articles = []
 
