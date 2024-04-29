@@ -5,17 +5,14 @@ import itertools
 from datetime import datetime
 from scraping_tools import store_to_mongo
 import json
-from multiprocessing import Pool
 
 # Selenium imports
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.service import Service
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
 
 # List to dict -> ['some headline', 'some url', 'some date'] -> {'headline': 'some headline', 'web-url': 'some url', 'date': 'some date'}
 # https://sudantribune.com/post_tag-sitemap.xml -- categories found here
@@ -23,12 +20,6 @@ TAGS = ['arbitrary-detention', 'darfur-conflict', 'darfur-conflicthumanitarian',
 'darfur-groups', 'darfur-peacekeeping-mission-unamid', 'human-rights', 'humanitarian',
 'kidnapping', 'rsf']
 DEPLOYMENT = os.getenv('DEPLOYMENT')
-# Setup the DRIVER
-options = Options()
-options.add_argument("--headless=new")
-DRIVER = webdriver.Chrome(options=options)
-LOCATOR = (By.CSS_SELECTOR, '.attachment-str-singular.size-str-singular.lazy-img.wp-post-image')
-PLACEHOLDER_SRC = 'https://sudantribune.com/wp-content/themes/sudantribune/images/no-image.jpg'
 
 def get_articles_from_page(soup) -> list:
     post_items = soup.find_all('div', class_='post-item col-md-4')
@@ -86,46 +77,56 @@ def remove_non_relevant_articles(articles) -> list:
             
     return articles
 
-def wait_for_correct_image(DRIVER, LOCATOR, PLACEHOLDER_SRC, timeout=10):
+def scrape_image(url):
+    # Setup the driver
+    options = Options()
+    options.add_argument("--headless=new")
+    driver = webdriver.Chrome(options=options)
+    locator = (By.CSS_SELECTOR, '.attachment-str-singular.size-str-singular.lazy-img.wp-post-image')
+    placeholder_src = 'https://sudantribune.com/wp-content/themes/sudantribune/images/no-image.jpg'
+    driver.get(url)
+
     try:
         # Wait until the src attribute of the image is not the placeholder's src
-        WebDriverWait(DRIVER, timeout).until(
-            lambda DRIVER: DRIVER.find_element(*LOCATOR).get_attribute('src') != PLACEHOLDER_SRC
+        WebDriverWait(driver, 10).until(
+            lambda driver: driver.find_element(*locator).get_attribute('src') != placeholder_src
         )
-        return DRIVER.find_element(*LOCATOR)
-    
-    except TimeoutException:
-        return None
+        image_url = driver.find_element(*locator).get_attribute('src')
+    finally:
+        driver.quit()
+
+    return image_url
 
 def scrape_article(url):
-    DRIVER.get(url)
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, 'html.parser')
 
+    body = soup.find('div', class_='wp_content') # changeto whatever tag the body is
+    content = body.find_all('p') # changeto possible change here
+
+    text_list = []
+
+    for paragraph in content:
+        text_list.append(paragraph.get_text())
+
+    text = '\n'.join(text_list)
+    raw_text = text.encode('ascii', 'ignore').decode('ascii').replace('\n', '')
+
+    # Identify if image exists
     try:
-        # Wait for the content of the article to load
-        WebDriverWait(DRIVER, 10).until(
-            EC.presence_of_element_located((By.CLASS_NAME, 'wp_content'))
-        )
+        image_exists = soup.find('img', class_='attachment-str-singular size-str-singular lazy-img wp-post-image')['src']
 
-        # Extract text
-        content = DRIVER.find_elements(By.CSS_SELECTOR, '.wp_content p')
-        text_list = [paragraph.text for paragraph in content]
-        raw_text = ' '.join(text_list).encode('ascii', 'ignore').decode('ascii')
+        if image_exists:
+            image_url = scrape_image(url)
 
-        # Try to get the image URL
-        image = wait_for_correct_image(DRIVER, LOCATOR, PLACEHOLDER_SRC)
-
-        if image:
-            image_url = image.get_attribute('src')
-            print(image_url)
-        else:
-            image_url = None
-    finally:
-        DRIVER.quit()
+    except TypeError:
+        image_url = None
 
     return [raw_text, image_url]
 
 if __name__ == '__main__':
     articles = []
+    print('Starting Sudan Tribune crawler')
 
     if int(DEPLOYMENT):
         for tag in TAGS:
@@ -136,8 +137,10 @@ if __name__ == '__main__':
             articles += get_articles_from_page(soup)
 
     else:
-        for tag in TAGS:
-            articles += get_articles_by_tag(tag)
+        for i in range(len(TAGS)):
+            print(f'Processing tag {i + 1} of {len(TAGS)}')
+            articles += get_articles_by_tag(TAGS[i])
+
     print('unfiltered articles:', len(articles))
 
     # Remove duplicates and articles that are not relevant by date
@@ -161,8 +164,17 @@ if __name__ == '__main__':
         date = article[2]
         body = article[3]
         image_urls = article[4]
+        
+        db_data = {'source': 'Sudan Tribune',
+            'headline': headline,
+            'web_url': web_url,
+            'date': date,
+            'body': body,
+            'image_urls': image_urls,
+            'archive_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
 
-        db_articles.append({'source': 'Sudan Tribune', 'headline': headline, 'web_url': web_url, 'date': date, 'body': body, 'image_urls': image_urls})
+        db_articles.append(db_data)
     
     try:
         store_to_mongo(db_articles) # Store articles in MongoDB

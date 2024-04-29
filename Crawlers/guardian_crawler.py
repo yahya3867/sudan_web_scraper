@@ -8,11 +8,13 @@ API_KEY = os.getenv('GUARDIAN_API_KEY')
 CATEGORIES = ['war crimes', 'war', 'conflict', 'violence', 'military', 'rebel', 'insurgency', 'ceasefires', 'humanitarian crises',
               'rape', 'physical abuse', 'sexual abuse', 'child soldiers', 'child abuse', 'child prostitution', 'torture',
               'bombings', 'weapons & arms', 'gender-based violence', 'khartoum', 'darfur', 'sudan', 'south sudan', 'north sudan']
+ARCHIVE_DATE = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 # Retrieves articles from a single page with given url and parameters
 def page_articles(url, params):
     # List to store articles
-    response_items = []
+    article_data = []
+    api_data = []
     response = requests.get(url, params=params).json()
 
     # Get articles from response
@@ -33,20 +35,29 @@ def page_articles(url, params):
         except KeyError:
             pass
 
-        response_items.append({
+        article_data.append({
             'source': 'The Guardian',
-            'api_url': api_url,
             'web_url': web_url,
             'headline': headline,
             'date': date,
             'body': body,
             'image_urls': image_urls,
+            'archive_date': ARCHIVE_DATE
         })
 
-    return response_items
+        api_data.append({
+            'source': 'The Guardian',
+            'api_url': api_url,
+            'archive_date': ARCHIVE_DATE
+        })
+
+    return article_data, api_data 
 
 # Formats api urls and calls 'page_articles' to get articles
 def get_articles(num_articles, date = '2023-04-10'):
+    articles = []
+    api_urls = []
+
     # Checks if num articles is less than or equal to 200
     if num_articles <= 200:
         params = {
@@ -61,7 +72,7 @@ def get_articles(num_articles, date = '2023-04-10'):
 
         base_url = 'https://content.guardianapis.com/search'
         
-        articles = page_articles(base_url, params)
+        articles, api_urls = page_articles(base_url, params)
 
     # If num articles is greater than 200, get articles in chunks of 200 (max page size)
     else:
@@ -81,7 +92,9 @@ def get_articles(num_articles, date = '2023-04-10'):
             }
             url = 'https://content.guardianapis.com/'
             
-            articles += page_articles(url, params)
+            new_articles, new_api_urls = page_articles(url, params)
+            articles.extend(new_articles)
+            api_urls.extend(new_api_urls)
 
         params = {
             'from-date': date,
@@ -95,10 +108,12 @@ def get_articles(num_articles, date = '2023-04-10'):
         }
         url = 'https://content.guardianapis.com/'
         
-        articles += page_articles(url, params)
+        new_articles, new_api_urls = page_articles(url, params)
+        articles.extend(new_articles)
+        api_urls.extend(new_api_urls)
 
     
-    return parse_articles(articles)
+    return parse_articles(articles), api_urls
 
 # Run Program
 if __name__ == '__main__':
@@ -113,7 +128,7 @@ if __name__ == '__main__':
         initial_response = requests.get(URL)
         num_articles = initial_response.json()['response']['total']
 
-        articles = get_articles(num_articles, formatted_yesterday)
+        articles, api_urls = get_articles(num_articles, formatted_yesterday)
     
     # If not in deployment, get articles from 2023-04-10
     else:
@@ -123,13 +138,13 @@ if __name__ == '__main__':
         initial_response = requests.get(URL)
         num_articles = initial_response.json()['response']['total']
 
-        articles = get_articles(num_articles)
+        articles, api_urls = get_articles(num_articles)
 
     if len(articles) == 0:
         pass # TODO discuss what should be done in the case of no articles?
 
     else:
-        status = store_to_mongo(articles)
+        status = store_to_mongo(articles, api_urls=api_urls)
 
         if status:
             print('Articles stored successfully.')
