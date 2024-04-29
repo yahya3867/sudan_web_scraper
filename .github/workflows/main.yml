@@ -32,13 +32,3 @@ jobs:
         DEPLOYMENT: ${{ secrets.DEPLOYMENT }}
       run: |
         python Crawlers/guardian_crawler.py
-    
-      - name: Sudan Tribune Scraper
-      env:
-        GUARDIAN_API_KEY: ${{ secrets.GUARDIAN_API_KEY }}
-        MONGO_URI: ${{ secrets.MONGO_URI }}
-        MONGO_DB: ${{ secrets.MONGO_DB }}
-        MONGO_ARTICLE_COLLECTION: ${{ secrets.MONGO_ARTICLE_COLLECTION }}
-        DEPLOYMENT: ${{ secrets.DEPLOYMENT }}
-      run: |
-        python Crawlers/sudan_tribune.py
