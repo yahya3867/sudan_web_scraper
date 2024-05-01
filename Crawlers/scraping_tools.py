@@ -70,10 +70,10 @@ def store_article_analytics(num_articles: int, source: str):
             week_data = results[0]['week_data']
 
         except Exception as e: # Probably the first time we are storing data
-            week_data = []
+            week_data = [0 for i in range(7)]
         
     else:
-        week_data = []
+        week_data = [0 for i in range(7)]
 
     # Attempt to store articles
     try:
