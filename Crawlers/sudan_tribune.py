@@ -3,7 +3,7 @@ import requests
 import os
 import itertools
 from datetime import datetime
-from scraping_tools import store_to_mongo
+from scraping_tools import store_articles, store_most_recent, store_article_analytics
 import json
 
 # Selenium imports
@@ -147,6 +147,9 @@ if __name__ == '__main__':
     articles.sort()
     articles = list(k for k, _ in itertools.groupby(articles)) # Remove duplicates
     articles = remove_non_relevant_articles(articles) # Remove articles that are not relevant by date
+
+    found_articles = store_most_recent([article[1] for article in articles], 'Sudan Tribune')
+    articles = [article for article in articles if article[1] not in found_articles]
     num_articles = len(articles)
     print('filtered articles:', num_articles)
 
@@ -177,7 +180,8 @@ if __name__ == '__main__':
         db_articles.append(db_data)
     
     try:
-        store_to_mongo(db_articles) # Store articles in MongoDB
+        store_articles(db_articles) # Store articles in MongoDB
+        store_article_analytics(len(articles), 'Sudan Tribune') # Store article analytics
 
     except Exception as e:
         with open("sudantribune.json", "w") as outfile: 

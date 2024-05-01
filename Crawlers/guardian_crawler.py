@@ -1,5 +1,5 @@
 import requests
-from scraping_tools import parse_articles, store_to_mongo
+from scraping_tools import parse_articles, store_articles, store_article_analytics
 import os
 from datetime import datetime, timedelta
 
@@ -144,9 +144,10 @@ if __name__ == '__main__':
         pass # TODO discuss what should be done in the case of no articles?
 
     else:
-        status = store_to_mongo(articles, api_urls=api_urls)
+        status = store_articles(articles, api_urls=api_urls)
+        status -= store_article_analytics(len(articles), 'Sudan Tribune') # Will be 0 if successful counterintuitive ik but it works
 
-        if status:
+        if not status:
             print('Articles stored successfully.')
 
         else:
