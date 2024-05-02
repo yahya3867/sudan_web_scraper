@@ -25,15 +25,13 @@ df.to_excel('News_Articles/guardian_articles.xlsx')
 ## Installation
 
 ### Requirements
-- Python 3.8+
-- Beautiful Soup 4
-- Requests
-- Python-Dotenv
+- Python 3.11
+- requirements.txt
 
 ### Setup
 Clone the repository to your local machine:
 ```bash
-git clone https://github.com/MeeskaMooska/sudan_web_scraper
+git clone https://github.com/stccenter/sudan_web_scraper
 cd sudan_web_scraper
 conda env create -f environment.yml
 
