@@ -78,6 +78,15 @@ def store_article_analytics(num_articles: int, source: str):
     # Attempt to store articles
     try:
         week_data[weekday] = num_articles
+        week_data = {
+            'Monday': week_data[0],
+            'Tuesday': week_data[1],
+            'Wednesday': week_data[2],
+            'Thursday': week_data[3],
+            'Friday': week_data[4],
+            'Saturday': week_data[5],
+            'Sunday': week_data[6]
+        }
         filter = { 'source': source }
         newvalues = { "$set": { 'week_data': week_data } }
         mycol.update_one(filter, newvalues, upsert=True) 
