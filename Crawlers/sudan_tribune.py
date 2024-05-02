@@ -127,6 +127,7 @@ def scrape_article(url):
 if __name__ == '__main__':
     articles = []
     print('Starting Sudan Tribune crawler')
+    DEPLOYMENT = True
 
     if int(DEPLOYMENT):
         for tag in TAGS:
@@ -152,6 +153,10 @@ if __name__ == '__main__':
     articles = [article for article in articles if article[1] not in found_articles]
     num_articles = len(articles)
     print('filtered articles:', num_articles)
+    
+    if num_articles == 0:
+        print('No new articles found')
+        exit()
 
     # Now that we have our valid list of articles, we can start processing them
     for i in range(len(articles)):
