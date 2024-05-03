@@ -104,17 +104,17 @@ def store_most_recent(article_urls: list, source: str):
         mydb = myclient[os.getenv('MONGO_DB')]
         mycol = mydb[os.getenv('MONGO_RECENT_COLLECTION')]
 
-        results = mycol.find({ 'source': source })
-
-        # Collecting the URLs that are found in the database
-        found_urls = results[0]['url_list']
-
     except Exception as e:
         print('Error connecting to MongoDB:', e)
         return False
     
     # Attempt to store urls
     try:
+        results = mycol.find({ 'source': source })
+
+        # Collecting the URLs that are found in the database
+        found_urls = results[0]['url_list']
+
         filter = { 'source': source }
         newvalues = { "$set": { 'url_list': article_urls } }
         mycol.update_one(filter, newvalues, upsert=True) 

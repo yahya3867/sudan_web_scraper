@@ -35,7 +35,7 @@ jobs:
       run: |
         python Crawlers/guardian_crawler.py
 
-    - name: Guardian API Scraper
+    - name: Sudan Tribune Scraper
       env:
         MONGO_URI: ${{ secrets.MONGO_URI }}
         MONGO_DB: ${{ secrets.MONGO_DB }}

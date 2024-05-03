@@ -20,6 +20,7 @@ TAGS = ['arbitrary-detention', 'darfur-conflict', 'darfur-conflicthumanitarian',
 'darfur-groups', 'darfur-peacekeeping-mission-unamid', 'human-rights', 'humanitarian',
 'kidnapping', 'rsf']
 DEPLOYMENT = os.getenv('DEPLOYMENT')
+SOURCE = 'Sudan Tribune'
 
 def get_articles_from_page(soup) -> list:
     post_items = soup.find_all('div', class_='post-item col-md-4')
@@ -126,7 +127,7 @@ def scrape_article(url):
 
 if __name__ == '__main__':
     articles = []
-    print('Starting Sudan Tribune crawler')
+    print(f'Starting {SOURCE} crawler')
 
     if int(DEPLOYMENT):
         for tag in TAGS:
@@ -148,7 +149,7 @@ if __name__ == '__main__':
     articles = list(k for k, _ in itertools.groupby(articles)) # Remove duplicates
     articles = remove_non_relevant_articles(articles) # Remove articles that are not relevant by date
 
-    found_articles = store_most_recent([article[1] for article in articles], 'Sudan Tribune')
+    found_articles = store_most_recent([article[1] for article in articles], SOURCE)
     articles = [article for article in articles if article[1] not in found_articles]
     num_articles = len(articles)
     print('filtered articles:', num_articles)
@@ -159,7 +160,7 @@ if __name__ == '__main__':
 
     # Now that we have our valid list of articles, we can start processing them
     for i in range(len(articles)):
-        print('Processing:', articles[i][1], f'{i}/{num_articles}')
+        print('Processing:', articles[i][1], f'{i + 1}/{num_articles}')
         article_data = scrape_article(articles[i][1])
         articles[i] += article_data
 
@@ -172,7 +173,7 @@ if __name__ == '__main__':
         body = article[3]
         image_urls = article[4]
         
-        db_data = {'source': 'Sudan Tribune',
+        db_data = {'source': SOURCE,
             'headline': headline,
             'web_url': web_url,
             'date': date,
@@ -185,7 +186,7 @@ if __name__ == '__main__':
     
     try:
         store_articles(db_articles) # Store articles in MongoDB
-        store_article_analytics(len(articles), 'Sudan Tribune') # Store article analytics
+        store_article_analytics(len(articles), SOURCE) # Store article analytics
 
     except Exception as e:
         with open("sudantribune.json", "w") as outfile: 
