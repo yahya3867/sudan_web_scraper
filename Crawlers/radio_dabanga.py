@@ -212,7 +212,8 @@ if __name__ == '__main__':
     try:
         store_articles(db_articles) # Store articles in MongoDB
         store_article_analytics(len(articles), SOURCE) # Store article analytics
+        print('Articles stored successfully')
 
     except Exception as e:
-        with open("radiodabanga.json", "w") as outfile: 
-            json.dump(db_articles, outfile)
+        print('Error storing articles:', e)
+        exit()
