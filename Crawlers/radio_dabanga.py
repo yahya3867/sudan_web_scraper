@@ -4,18 +4,8 @@ import os
 import itertools
 from datetime import datetime
 from scraping_tools import store_articles, store_most_recent, store_article_analytics
-import json
 import cv2
 import numpy as np
-
-
-# Selenium imports
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.chrome.options import Options
 
 # List to dict -> ['some headline', 'some url', 'some date'] -> {'headline': 'some headline', 'web-url': 'some url', 'date': 'some date'}
 # https://www.dabangasudan.org/category-sitemap.xml -- categories found here
@@ -98,27 +88,6 @@ def image_is_blank(image_url):
 
     # Return True if the image is blank
     return True if white_ratio > 0.9 or black_ratio > 0.9 else False
-
-# Used to scrape a dynamic image
-def scrape_image(url):
-    # Setup the driver
-    options = Options()
-    options.add_argument("--headless=new")
-    driver = webdriver.Chrome(options=options)
-    locator = (By.CSS_SELECTOR, '.attachment-str-singular.size-str-singular.lazy-img.wp-post-image')
-    placeholder_src = 'https://sudantribune.com/wp-content/themes/sudantribune/images/no-image.jpg'
-    driver.get(url)
-
-    try:
-        # Wait until the src attribute of the image is not the placeholder's src
-        WebDriverWait(driver, 10).until(
-            lambda driver: driver.find_element(*locator).get_attribute('src') != placeholder_src
-        )
-        image_url = driver.find_element(*locator).get_attribute('src')
-    finally:
-        driver.quit()
-
-    return image_url
 
 # Used to scrape the article
 def scrape_article(url):
