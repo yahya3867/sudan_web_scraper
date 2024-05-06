@@ -5,6 +5,9 @@ import itertools
 from datetime import datetime
 from scraping_tools import store_articles, store_most_recent, store_article_analytics
 import json
+import cv2
+import numpy as np
+
 
 # Selenium imports
 from selenium import webdriver
@@ -15,20 +18,22 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.chrome.options import Options
 
 # List to dict -> ['some headline', 'some url', 'some date'] -> {'headline': 'some headline', 'web-url': 'some url', 'date': 'some date'}
-# https://sudantribune.com/post_tag-sitemap.xml -- categories found here
-TAGS = ['arbitrary-detention', 'darfur-conflict', 'darfur-conflicthumanitarian',
-'darfur-groups', 'darfur-peacekeeping-mission-unamid', 'human-rights', 'humanitarian',
-'kidnapping', 'rsf']
+# https://www.dabangasudan.org/category-sitemap.xml -- categories found here
+TAGS = ['violence', 'sexual-violence', 'refugees-displaced']
 DEPLOYMENT = os.getenv('DEPLOYMENT')
+SOURCE = 'Radio Dabanga'
 
+# Collects all article urls from a page
 def get_articles_from_page(soup) -> list:
-    post_items = soup.find_all('div', class_='post-item col-md-4')
+    post_item_container = soup.find('main', class_='site-main')
+    post_items = post_item_container.find_all('article')
     articles = []
 
     for post in post_items:
-        headline = post.find('h3', 'entry__title').text.replace('\n', '')
-        web_url = post.find('a')['href']
-        date = post.find('li', 'entry__meta-date').text
+        title_link = post.find('h3', class_="article-title article-title-1").find('a')
+        headline = title_link.text.replace('\n', '').strip()
+        web_url = title_link['href']
+        date = post.find('span', class_='item-metadata posts-date').text.replace('\n', '').strip()
         article_data = [headline, web_url, date]
         articles.append(article_data)
 
@@ -38,45 +43,63 @@ def get_articles_from_page(soup) -> list:
 def get_articles_by_tag(tag) -> list:
     articles = []
 
-    url = f'https://sudantribune.com/articletag/{tag}'
-    response = requests.get(url)
+    base_url = f'https://www.dabangasudan.org/en/all-news/category/{tag}'
+    response = requests.get(base_url)
     soup = BeautifulSoup(response.text, 'html.parser')
 
     articles = get_articles_from_page(soup) # Get articles from first page if only one page we just return
     
     # Check if navbar exists
-    nav_bar = soup.find('nav', class_='pages-numbers pagination') # Identifies if there are multiple pages
+    nav_bar = soup.find('div', class_='nav-links') # Identifies if there are multiple pages
     
     if nav_bar is not None: # Multiple pages
-        last_button = nav_bar.find('a', class_='pagination__page pagination__page--last')
-
-        if last_button is None:
-            last_page = int(nav_bar.find_all('a')[-2].text)
-
-        else: # Many pages
-            last_page = nav_bar.find_all('a')[-1]['href'].split('/')[-2]
+        last_page = nav_bar.find_all('a', class_='page-numbers')[-2].text # Last page
             
         for i in range(2, int(last_page) + 1):
-            url = f'https://sudantribune.com/articletag/{tag}/page/{i}'
+            url = f'{base_url}/page/{i}'
             response = requests.get(url)
             soup = BeautifulSoup(response.text, 'html.parser')
             articles += get_articles_from_page(soup)
 
     return articles
 
+# Remove duplicates and articles that are not relevant by date
 def remove_non_relevant_articles(articles) -> list:
     relevant_date = datetime(2023, 4, 15)
 
-    date_format = ' %d %B  %Y'
+    date_format = '%d/%m/%Y %H:%M'
 
     for article in articles:
         article_date = datetime.strptime(article[2], date_format)
 
         if article_date < relevant_date:
             articles.remove(article)
+
+        else:
+            article[2] = article_date
             
     return articles
 
+# Used to determine if the image is blank
+def image_is_blank(image_url):
+    # Fetch the image
+    response = requests.get(image_url)
+    response.raise_for_status()  # Ensure the request was successful
+
+    # Convert the image to a numpy array
+    image_bytes = np.asarray(bytearray(response.content), dtype=np.uint8)
+    img = cv2.imdecode(image_bytes, cv2.IMREAD_COLOR)
+
+    # Check if the image is blank
+    light_pixels = np.sum(img > 244)
+    dark_pixels = np.sum(img < 10)
+    white_ratio = light_pixels / img.size
+    black_ratio = dark_pixels / img.size
+
+    # Return True if the image is blank
+    return True if white_ratio > 0.9 or black_ratio > 0.9 else False
+
+# Used to scrape a dynamic image
 def scrape_image(url):
     # Setup the driver
     options = Options()
@@ -97,40 +120,43 @@ def scrape_image(url):
 
     return image_url
 
+# Used to scrape the article
 def scrape_article(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    body = soup.find('div', class_='wp_content') # changeto whatever tag the body is
-    content = body.find_all('p') # changeto possible change here
+    content = soup.find('div', class_='entry-content-wrap')
+    body_content = soup.find('div', class_='entry-content').find_all('p')#[0:-2]
+
+    # Try to get the image
+    try:
+        srcset = content.find('img', class_='attachment-covernews-featured size-covernews-featured wp-post-image')['srcset']
+        image_url = srcset.split(' ')[0]
+
+        if image_is_blank(image_url):
+            image_url = []
+
+    except Exception as e:
+        image_url = []
 
     text_list = []
-
-    for paragraph in content:
+    
+    for paragraph in body_content:
         text_list.append(paragraph.get_text())
 
     text = '\n'.join(text_list)
     raw_text = text.encode('ascii', 'ignore').decode('ascii').replace('\n', '')
 
-    # Identify if image exists
-    try:
-        image_exists = soup.find('img', class_='attachment-str-singular size-str-singular lazy-img wp-post-image')['src']
-
-        if image_exists:
-            image_url = scrape_image(url)
-
-    except TypeError:
-        image_url = None
-
     return [raw_text, image_url]
 
+# Main function
 if __name__ == '__main__':
     articles = []
-    print('Starting Sudan Tribune crawler')
+    print(f'Starting {SOURCE} crawler')
 
     if int(DEPLOYMENT):
         for tag in TAGS:
-            url = f'https://sudantribune.com/articletag/{tag}'
+            url = f'https://www.dabangasudan.org/en/all-news/category/{tag}'
             response = requests.get(url)
             soup = BeautifulSoup(response.text, 'html.parser')
 
@@ -142,13 +168,13 @@ if __name__ == '__main__':
             articles += get_articles_by_tag(TAGS[i])
 
     print('unfiltered articles:', len(articles))
-
+    
     # Remove duplicates and articles that are not relevant by date
     articles.sort()
     articles = list(k for k, _ in itertools.groupby(articles)) # Remove duplicates
     articles = remove_non_relevant_articles(articles) # Remove articles that are not relevant by date
 
-    found_articles = store_most_recent([article[1] for article in articles], 'Sudan Tribune')
+    found_articles = store_most_recent([article[1] for article in articles], SOURCE)
     articles = [article for article in articles if article[1] not in found_articles]
     num_articles = len(articles)
     print('filtered articles:', num_articles)
@@ -159,7 +185,7 @@ if __name__ == '__main__':
 
     # Now that we have our valid list of articles, we can start processing them
     for i in range(len(articles)):
-        print('Processing:', articles[i][1], f'{i}/{num_articles}')
+        print('Processing:', articles[i][1], f'{i + 1}/{num_articles}')
         article_data = scrape_article(articles[i][1])
         articles[i] += article_data
 
@@ -172,7 +198,7 @@ if __name__ == '__main__':
         body = article[3]
         image_urls = article[4]
         
-        db_data = {'source': 'Sudan Tribune',
+        db_data = {'source': SOURCE,
             'headline': headline,
             'web_url': web_url,
             'date': date,
@@ -185,8 +211,8 @@ if __name__ == '__main__':
     
     try:
         store_articles(db_articles) # Store articles in MongoDB
-        store_article_analytics(len(articles), 'Sudan Tribune') # Store article analytics
+        store_article_analytics(len(articles), SOURCE) # Store article analytics
 
     except Exception as e:
-        with open("sudantribune.json", "w") as outfile: 
+        with open("radiodabanga.json", "w") as outfile: 
             json.dump(db_articles, outfile)
