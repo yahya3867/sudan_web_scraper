@@ -53,20 +53,12 @@ def get_articles_by_tag(tag) -> list:
 
     return articles
 
-# Remove duplicates and articles that are not relevant by date
 def remove_non_relevant_articles(articles) -> list:
     relevant_date = datetime(2023, 4, 15)
-
     date_format = '%d/%m/%Y %H:%M'
 
-    for article in articles:
-        article_date = datetime.strptime(article[2], date_format)
-
-        if article_date < relevant_date:
-            articles.remove(article)
-
-        else:
-            article[2] = article_date
+    # Create a new list to store the relevant articles
+    articles = [article for article in articles if datetime.strptime(article[2], date_format) >= relevant_date]
             
     return articles
 
