@@ -3,7 +3,7 @@ name: Sudan Web Crawler CI
 on:
   workflow_dispatch:
   schedule:
-    - cron: #'0 0 * * *' # Run every day at midnight
+    - cron: '0 0 * * *' # Run every day at midnight
 
 jobs:
   build:
