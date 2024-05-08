@@ -60,39 +60,27 @@ def store_article_analytics(num_articles: int, source: str):
         print('Error connecting to MongoDB:', e)
         return False
     
-    # If it not is Monday, we will collect the weekly data
-    weekday = datetime.today().weekday()
-    if weekday != 0:
-        # Find current week data
-        try:
-            results = mycol.find({ 'source': source })
-
-            week_data = results[0]['week_data']
-
-        except Exception as e: # Probably the first time we are storing data
-            week_data = [0 for i in range(7)]
-        
-    else:
-        week_data = [0 for i in range(7)]
-
-    # Attempt to store articles
     try:
-        week_data[weekday] = num_articles
-        week_data = {
-            'Monday': week_data[0],
-            'Tuesday': week_data[1],
-            'Wednesday': week_data[2],
-            'Thursday': week_data[3],
-            'Friday': week_data[4],
-            'Saturday': week_data[5],
-            'Sunday': week_data[6]
-        }
-        filter = { 'source': source }
-        newvalues = { "$set": { 'week_data': week_data } }
-        mycol.update_one(filter, newvalues, upsert=True) 
+        date = datetime.now().strftime('%Y-%m-%d')
+        
+        # Check if there is already an entry for today
+        results = list(mycol.find({ '_id': date }))
 
-        return True
-
+        if len(results) == 0:
+            # Create a new entry
+            new_entry = {
+                '_id': date,
+                'articles': {
+                    source: num_articles
+                }
+            }
+            mycol.insert_one(new_entry)
+        
+        else: # Update the existing entry
+            filter = { '_id': date }
+            newvalues = { "$inc": { f'articles.{source}': num_articles } }
+            mycol.update_one(filter, newvalues)
+    
     except Exception as e:
         print('Error storing articles:', e)
         return False
@@ -110,14 +98,24 @@ def store_most_recent(article_urls: list, source: str):
     
     # Attempt to store urls
     try:
-        results = mycol.find({ 'source': source })
+        results = list(mycol.find({ 'source': source }))
 
-        # Collecting the URLs that are found in the database
-        found_urls = results[0]['url_list']
+        if len(results) == 0:
+            # Create a new entry
+            new_entry = {
+                'source': source,
+                'url_list': article_urls
+            }
+            mycol.insert_one(new_entry)
+            return []
 
-        filter = { 'source': source }
-        newvalues = { "$set": { 'url_list': article_urls } }
-        mycol.update_one(filter, newvalues, upsert=True) 
+        else:
+            # Collecting the URLs that are found in the database
+            found_urls = results[0]['url_list']
+
+            filter = { 'source': source }
+            newvalues = { "$set": { 'url_list': article_urls } }
+            mycol.update_one(filter, newvalues, upsert=True) 
 
         return found_urls
 

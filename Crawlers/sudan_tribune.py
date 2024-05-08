@@ -16,9 +16,7 @@ from selenium.webdriver.chrome.options import Options
 
 # List to dict -> ['some headline', 'some url', 'some date'] -> {'headline': 'some headline', 'web-url': 'some url', 'date': 'some date'}
 # https://sudantribune.com/post_tag-sitemap.xml -- categories found here
-TAGS = ['arbitrary-detention', 'darfur-conflict', 'darfur-conflicthumanitarian',
-'darfur-groups', 'darfur-peacekeeping-mission-unamid', 'human-rights', 'humanitarian',
-'kidnapping', 'rsf']
+CATEGORIES = ['/politics/women-issues/', '/regions/warrap/', '/regions/khartoum/', '/saf-rsf-peace/', '/politics/saf-rsf-fighting/']
 DEPLOYMENT = os.getenv('DEPLOYMENT')
 SOURCE = 'Sudan Tribune'
 
@@ -36,10 +34,10 @@ def get_articles_from_page(soup) -> list:
     return articles
 
 # Used to speed up the initial run wont be used in deployment
-def get_articles_by_tag(tag) -> list:
+def get_articles_by_tag(category) -> list:
     articles = []
 
-    url = f'https://sudantribune.com/articletag/{tag}'
+    url = f'https://sudantribune.com/articlecategory/{category}'
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
 
@@ -58,7 +56,7 @@ def get_articles_by_tag(tag) -> list:
             last_page = nav_bar.find_all('a')[-1]['href'].split('/')[-2]
             
         for i in range(2, int(last_page) + 1):
-            url = f'https://sudantribune.com/articletag/{tag}/page/{i}'
+            url = f'https://sudantribune.com/articlecategory/{category}/page/{i}'
             response = requests.get(url)
             soup = BeautifulSoup(response.text, 'html.parser')
             articles += get_articles_from_page(soup)
@@ -67,32 +65,33 @@ def get_articles_by_tag(tag) -> list:
 
 def remove_non_relevant_articles(articles) -> list:
     relevant_date = datetime(2023, 4, 15)
-
     date_format = ' %d %B  %Y'
 
-    for article in articles:
-        article_date = datetime.strptime(article[2], date_format)
-
-        if article_date < relevant_date:
-            articles.remove(article)
+    # Create a new list to store the relevant articles
+    articles = [article for article in articles if datetime.strptime(article[2], date_format) >= relevant_date]
             
     return articles
 
 def scrape_image(url):
-    # Setup the driver
-    options = Options()
-    options.add_argument("--headless=new")
-    driver = webdriver.Chrome(options=options)
-    locator = (By.CSS_SELECTOR, '.attachment-str-singular.size-str-singular.lazy-img.wp-post-image')
-    placeholder_src = 'https://sudantribune.com/wp-content/themes/sudantribune/images/no-image.jpg'
-    driver.get(url)
-
     try:
+        # Setup the driver
+        options = Options()
+        options.add_argument("--headless=new")
+        driver = webdriver.Chrome(options=options)
+        locator = (By.CSS_SELECTOR, '.attachment-str-singular.size-str-singular.lazy-img.wp-post-image')
+        placeholder_src = 'https://sudantribune.com/wp-content/themes/sudantribune/images/no-image.jpg'
+        driver.get(url)
+
         # Wait until the src attribute of the image is not the placeholder's src
         WebDriverWait(driver, 10).until(
             lambda driver: driver.find_element(*locator).get_attribute('src') != placeholder_src
         )
         image_url = driver.find_element(*locator).get_attribute('src')
+
+    except Exception as e:
+        print('Error scraping image:', e)
+        image_url = None
+
     finally:
         driver.quit()
 
@@ -102,7 +101,7 @@ def scrape_article(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    body = soup.find('div', class_='wp_content') # changeto whatever tag the body is
+    body = soup.find('div', class_='wp_content') # changeto whatever category the body is
     content = body.find_all('p') # changeto possible change here
 
     text_list = []
@@ -130,29 +129,31 @@ if __name__ == '__main__':
     print(f'Starting {SOURCE} crawler')
 
     if int(DEPLOYMENT):
-        for tag in TAGS:
-            url = f'https://sudantribune.com/articletag/{tag}'
+        for category in CATEGORIES:
+            url = f'https://sudantribune.com/articlecategory/{category}'
             response = requests.get(url)
             soup = BeautifulSoup(response.text, 'html.parser')
 
             articles += get_articles_from_page(soup)
 
     else:
-        for i in range(len(TAGS)):
-            print(f'Processing tag {i + 1} of {len(TAGS)}')
-            articles += get_articles_by_tag(TAGS[i])
+        for i in range(len(CATEGORIES)):
+            print(f'Processing category {i + 1} of {len(CATEGORIES)}')
+            articles += get_articles_by_tag(CATEGORIES[i])
 
     print('unfiltered articles:', len(articles))
 
     # Remove duplicates and articles that are not relevant by date
     articles.sort()
     articles = list(k for k, _ in itertools.groupby(articles)) # Remove duplicates
+    print('filtered articles after local duplicates:', len(articles))
     articles = remove_non_relevant_articles(articles) # Remove articles that are not relevant by date
+    print('filtered articles after date:', len(articles))
 
     found_articles = store_most_recent([article[1] for article in articles], SOURCE)
     articles = [article for article in articles if article[1] not in found_articles]
     num_articles = len(articles)
-    print('filtered articles:', num_articles)
+    print('filtered articles after stored duplicates:', len(articles))
     
     if num_articles == 0:
         print('No new articles found')
@@ -188,6 +189,8 @@ if __name__ == '__main__':
         store_articles(db_articles) # Store articles in MongoDB
         store_article_analytics(len(articles), SOURCE) # Store article analytics
 
+        print('Articles stored successfully')
+
     except Exception as e:
-        with open("sudantribune.json", "w") as outfile: 
-            json.dump(db_articles, outfile)
+        print('Error storing articles:', e)
+        exit()

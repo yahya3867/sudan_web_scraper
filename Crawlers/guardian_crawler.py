@@ -141,7 +141,7 @@ if __name__ == '__main__':
         articles, api_urls = get_articles(num_articles)
 
     if len(articles) == 0:
-        pass # TODO discuss what should be done in the case of no articles?
+        print('No new articles found.')
 
     else:
         status = store_articles(articles, api_urls=api_urls)
