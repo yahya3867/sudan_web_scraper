@@ -54,7 +54,7 @@ def store_article_analytics(num_articles: int, source: str):
     try:
         myclient = pymongo.MongoClient(os.getenv('MONGO_URI'))
         mydb = myclient[os.getenv('MONGO_DB')]
-        mycol = mydb[os.getenv('MONGO_WEEKLY_COLLECTION')]
+        mycol = mydb[os.getenv('MONGO_ANALYTICS_COLLECTION')]
 
     except Exception as e:
         print('Error connecting to MongoDB:', e)
