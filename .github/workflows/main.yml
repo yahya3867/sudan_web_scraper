@@ -58,3 +58,15 @@ jobs:
         DEPLOYMENT: ${{ secrets.DEPLOYMENT }}
       run: |
         python Crawlers/radio_dabanga.py
+      
+    - name: Sudan War Monitor Scraper
+      env:
+        MONGO_URI: ${{ secrets.MONGO_URI }}
+        MONGO_DB: ${{ secrets.MONGO_DB }}
+        MONGO_ARTICLE_COLLECTION: ${{ secrets.MONGO_ARTICLE_COLLECTION }}
+        MONGO_API_COLLECTION: ${{ secrets.MONGO_API_COLLECTION }}
+        MONGO_RECENT_COLLECTION: ${{ secrets.MONGO_RECENT_COLLECTION }}
+        MONGO_WEEKLY_COLLECTION: ${{ secrets.MONGO_WEEKLY_COLLECTION }}
+        DEPLOYMENT: ${{ secrets.DEPLOYMENT }}
+      run: |
+        python Crawlers/sudan_war_monitor.py
