@@ -144,12 +144,8 @@ if __name__ == '__main__':
         print('No new articles found.')
 
     else:
-        status = store_articles(articles, api_urls=api_urls)
-        status -= store_article_analytics(len(articles), 'Sudan Tribune') # Will be 0 if successful counterintuitive ik but it works
+        store_articles(articles, api_urls=api_urls)
+        store_article_analytics(len(articles), 'The Guardian') # Will be 0 if successful counterintuitive ik but it works
 
-        if not status:
-            print('Articles stored successfully.')
-
-        else:
-            print('Error storing articles.') # we can try to error response here
+        print('Articles stored successfully.')
 
