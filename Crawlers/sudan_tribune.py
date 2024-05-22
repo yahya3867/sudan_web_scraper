@@ -131,6 +131,7 @@ def scrape_article(url):
 
 if __name__ == '__main__':
     articles = []
+    error_articles = []
     print(f'Starting {SOURCE} crawler')
 
     if int(DEPLOYMENT):
@@ -168,9 +169,14 @@ if __name__ == '__main__':
 
     # Now that we have our valid list of articles, we can start processing them
     for i in range(len(articles)):
-        print('Processing:', articles[i][1], f'{i + 1}/{num_articles}')
-        article_data = scrape_article(articles[i][1])
-        articles[i] += article_data
+        try:
+            print('Processing:', articles[i][1], f'{i + 1}/{num_articles}')
+            article_data = scrape_article(articles[i][1])
+            articles[i] += article_data
+
+        except Exception as e:
+            print('Error processing article:', e)
+            error_articles.append(articles[i])
 
     db_articles = []
 
@@ -196,7 +202,15 @@ if __name__ == '__main__':
         store_articles(db_articles) # Store articles in MongoDB
         store_article_analytics(len(articles), SOURCE) # Store article analytics
 
-        print('Articles stored successfully')
+        if len(error_articles) > 0:
+            with open('error_articles.txt', 'w') as f:
+                for article in error_articles:
+                    f.write(f'{article[1]}\n')
+
+            print('Articles stored successfully with errors')
+    
+        else:
+            print('Articles stored successfully')
 
     except Exception as e:
         print('Error storing articles:', e)
