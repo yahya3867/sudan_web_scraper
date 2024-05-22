@@ -5,12 +5,15 @@ from datetime import datetime
 from scraping_tools import store_articles, store_most_recent, store_article_analytics
 from time import sleep
 from dotenv import load_dotenv
+import sys
 
 load_dotenv()
 
 # List to dict -> ['some headline', 'some url', 'some date'] -> {'headline': 'some headline', 'web-url': 'some url', 'date': 'some date'}
 # https://sudanwarmonitor.com/sitemap/(year) -- articles found here
 DEPLOYMENT = os.getenv('DEPLOYMENT')
+if sys.argv == 'initial':
+    DEPLOYMENT = False
 SOURCE = 'Sudan War Monitor'
 
 # Scrapes sitemap for articles
@@ -83,9 +86,11 @@ if __name__ == "__main__":
     articles = []
 
     if int(DEPLOYMENT):
+        print('Running in deployment mode')
         articles = find_articles(datetime.now().year)
 
     else:
+        print('Running in initial mode')
         for year in ['2023', '2024']:
             print(f'Processing year {year}')
             articles += find_articles(year)

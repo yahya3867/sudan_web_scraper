@@ -5,6 +5,7 @@ import itertools
 from datetime import datetime
 from scraping_tools import store_articles, store_most_recent, store_article_analytics
 from dotenv import load_dotenv
+import sys
 
 load_dotenv()
 
@@ -20,6 +21,8 @@ from selenium.webdriver.chrome.options import Options
 # https://sudantribune.com/post_tag-sitemap.xml -- categories found here
 CATEGORIES = ['/politics/women-issues/', '/regions/warrap/', '/regions/khartoum/', '/saf-rsf-peace/', '/politics/saf-rsf-fighting/']
 DEPLOYMENT = os.getenv('DEPLOYMENT')
+if sys.argv == 'initial':
+    DEPLOYMENT = False
 SOURCE = 'Sudan Tribune'
 
 def get_articles_from_page(soup) -> list:
@@ -131,6 +134,7 @@ if __name__ == '__main__':
     print(f'Starting {SOURCE} crawler')
 
     if int(DEPLOYMENT):
+        print('Running in deployment mode')
         for category in CATEGORIES:
             url = f'https://sudantribune.com/articlecategory/{category}'
             response = requests.get(url)
@@ -139,6 +143,7 @@ if __name__ == '__main__':
             articles += get_articles_from_page(soup)
 
     else:
+        print('Running in initial mode')
         for i in range(len(CATEGORIES)):
             print(f'Processing category {i + 1} of {len(CATEGORIES)}')
             articles += get_articles_by_tag(CATEGORIES[i])

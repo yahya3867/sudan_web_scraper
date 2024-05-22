@@ -3,10 +3,14 @@ from scraping_tools import parse_articles, store_articles, store_article_analyti
 import os
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+import sys
 
 load_dotenv()
 
 DEPLOYMENT = os.getenv('DEPLOYMENT')
+if sys.argv == 'initial':
+    DEPLOYMENT = False
+
 API_KEY = os.getenv('GUARDIAN_API_KEY')
 CATEGORIES = ['war crimes', 'war', 'conflict', 'violence', 'military', 'rebel', 'insurgency', 'ceasefires', 'humanitarian crises',
               'rape', 'physical abuse', 'sexual abuse', 'child soldiers', 'child abuse', 'child prostitution', 'torture',
@@ -125,6 +129,7 @@ if __name__ == '__main__':
     formatted_yesterday = yesterday.strftime('%Y-%m-%d')
 
     if int(DEPLOYMENT):
+        print('Running in deployment mode')
         URL = f'https://content.guardianapis.com/search?q={",".join(CATEGORIES)}&from-date={formatted_yesterday}&tag=world/sudan&api-key={API_KEY}'
 
         # Get the initial response to get the number of articles
@@ -135,6 +140,7 @@ if __name__ == '__main__':
     
     # If not in deployment, get articles from 2023-04-10
     else:
+        print('Running in initial mode')
         URL = f'https://content.guardianapis.com/search?q={",".join(CATEGORIES)}&from-date=2023-04-10&to-date={formatted_yesterday}&tag=world/sudan&api-key={API_KEY}'
 
         # Get the initial response to get the number of articles

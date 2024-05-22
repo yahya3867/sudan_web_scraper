@@ -7,6 +7,7 @@ from scraping_tools import store_articles, store_most_recent, store_article_anal
 import cv2
 import numpy as np
 from dotenv import load_dotenv
+import sys
 
 load_dotenv()
 
@@ -14,6 +15,9 @@ load_dotenv()
 # https://www.dabangasudan.org/category-sitemap.xml -- categories found here
 TAGS = ['violence', 'sexual-violence', 'refugees-displaced']
 DEPLOYMENT = os.getenv('DEPLOYMENT')
+if sys.argv == 'initial':
+    DEPLOYMENT = False
+
 SOURCE = 'Radio Dabanga'
 
 # Collects all article urls from a page
@@ -119,6 +123,7 @@ if __name__ == '__main__':
     print(f'Starting {SOURCE} crawler')
 
     if int(DEPLOYMENT):
+        print('Running in deployment mode')
         for tag in TAGS:
             url = f'https://www.dabangasudan.org/en/all-news/category/{tag}'
             response = requests.get(url)
@@ -127,6 +132,7 @@ if __name__ == '__main__':
             articles += get_articles_from_page(soup)
 
     else:
+        print('Running in initial mode')
         for i in range(len(TAGS)):
             print(f'Processing tag {i + 1} of {len(TAGS)}')
             articles += get_articles_by_tag(TAGS[i])
