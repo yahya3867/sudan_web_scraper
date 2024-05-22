@@ -2,6 +2,9 @@ import requests
 from scraping_tools import parse_articles, store_articles, store_article_analytics
 import os
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
+
+load_dotenv()
 
 DEPLOYMENT = os.getenv('DEPLOYMENT')
 API_KEY = os.getenv('GUARDIAN_API_KEY')

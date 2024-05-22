@@ -4,6 +4,9 @@ import os
 from datetime import datetime
 from scraping_tools import store_articles, store_most_recent, store_article_analytics
 from time import sleep
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # List to dict -> ['some headline', 'some url', 'some date'] -> {'headline': 'some headline', 'web-url': 'some url', 'date': 'some date'}
 # https://sudanwarmonitor.com/sitemap/(year) -- articles found here

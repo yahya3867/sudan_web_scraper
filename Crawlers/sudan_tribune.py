@@ -4,7 +4,9 @@ import os
 import itertools
 from datetime import datetime
 from scraping_tools import store_articles, store_most_recent, store_article_analytics
-import json
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Selenium imports
 from selenium import webdriver

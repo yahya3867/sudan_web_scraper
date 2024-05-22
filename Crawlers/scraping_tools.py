@@ -1,7 +1,25 @@
 from bs4 import BeautifulSoup
-import pymongo
+from pymongo import MongoClient
 import os
 from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv()
+
+def connect_to_mongo():
+    # Connection details
+    username = os.getenv('MONGO_USERNAME')
+    password = os.getenv('MONGO_PASSWORD')
+    database_name = os.getenv('MONGO_DB')
+
+    # Create a connection URI
+    uri = f"mongodb://{username}:{password}@localhost:27017/{database_name}?authSource={database_name}"
+
+    # Connect to the database
+    client = MongoClient(uri)
+    db = client[database_name]
+
+    return db
 
 # Parses articles and returns raw text.
 def parse_articles(articles: list):
@@ -20,8 +38,7 @@ def parse_articles(articles: list):
 def store_articles(articles: list, api_urls=None):
     # Attempt to connect to MongoDB
     try:
-        myclient = pymongo.MongoClient(os.getenv('MONGO_URI'))
-        mydb = myclient[os.getenv('MONGO_DB')]
+        db = connect_to_mongo()
 
     except Exception as e:
         print('Error connecting to MongoDB:', e)
@@ -29,8 +46,8 @@ def store_articles(articles: list, api_urls=None):
     
     # Attempt to store articles
     try:
-        mycol = mydb[os.getenv('MONGO_ARTICLE_COLLECTION')]
-        mycol.insert_many(articles)
+        article_column = db[os.getenv('MONGO_ARTICLE_COLLECTION')]
+        article_column.insert_many(articles)
 
     except Exception as e:
         print('Error storing articles:', e)
@@ -39,8 +56,8 @@ def store_articles(articles: list, api_urls=None):
     if api_urls:
         # Attempt to store articles
         try:
-            mycol = mydb[os.getenv('MONGO_API_COLLECTION')]
-            mycol.insert_many(api_urls)
+            article_column = db[os.getenv('MONGO_API_COLLECTION')]
+            article_column.insert_many(api_urls)
             return True
 
         except Exception as e:
@@ -52,9 +69,8 @@ def store_articles(articles: list, api_urls=None):
 def store_article_analytics(num_articles: int, source: str):
     # Attempt to connect to MongoDB
     try:
-        myclient = pymongo.MongoClient(os.getenv('MONGO_URI'))
-        mydb = myclient[os.getenv('MONGO_DB')]
-        mycol = mydb[os.getenv('MONGO_ANALYTICS_COLLECTION')]
+        db = connect_to_mongo()
+        analytics_column = db[os.getenv('MONGO_ANALYTICS_COLLECTION')]
 
     except Exception as e:
         print('Error connecting to MongoDB:', e)
@@ -64,7 +80,7 @@ def store_article_analytics(num_articles: int, source: str):
         date = datetime.now().strftime('%Y-%m-%d')
         
         # Check if there is already an entry for today
-        results = list(mycol.find({ '_id': date }))
+        results = list(analytics_column.find({ '_id': date }))
 
         if len(results) == 0:
             # Create a new entry
@@ -74,12 +90,12 @@ def store_article_analytics(num_articles: int, source: str):
                     source: num_articles
                 }
             }
-            mycol.insert_one(new_entry)
+            analytics_column.insert_one(new_entry)
         
         else: # Update the existing entry
             filter = { '_id': date }
             newvalues = { "$inc": { f'articles.{source}': num_articles } }
-            mycol.update_one(filter, newvalues)
+            analytics_column.update_one(filter, newvalues)
     
     except Exception as e:
         print('Error storing articles:', e)
@@ -88,9 +104,8 @@ def store_article_analytics(num_articles: int, source: str):
 def store_most_recent(article_urls: list, source: str):
     # Attempt to connect to MongoDB
     try:
-        myclient = pymongo.MongoClient(os.getenv('MONGO_URI'))
-        mydb = myclient[os.getenv('MONGO_DB')]
-        mycol = mydb[os.getenv('MONGO_RECENT_COLLECTION')]
+        db = connect_to_mongo()
+        recent_column = db[os.getenv('MONGO_RECENT_COLLECTION')]
 
     except Exception as e:
         print('Error connecting to MongoDB:', e)
@@ -98,7 +113,7 @@ def store_most_recent(article_urls: list, source: str):
     
     # Attempt to store urls
     try:
-        results = list(mycol.find({ 'source': source }))
+        results = list(recent_column.find({ 'source': source }))
 
         if len(results) == 0:
             # Create a new entry
@@ -106,7 +121,7 @@ def store_most_recent(article_urls: list, source: str):
                 'source': source,
                 'url_list': article_urls
             }
-            mycol.insert_one(new_entry)
+            recent_column.insert_one(new_entry)
             return []
 
         else:
@@ -115,7 +130,7 @@ def store_most_recent(article_urls: list, source: str):
 
             filter = { 'source': source }
             newvalues = { "$set": { 'url_list': article_urls } }
-            mycol.update_one(filter, newvalues, upsert=True) 
+            recent_column.update_one(filter, newvalues, upsert=True) 
 
         return found_urls
 
