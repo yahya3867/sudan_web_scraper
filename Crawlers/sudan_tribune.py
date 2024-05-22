@@ -176,6 +176,8 @@ if __name__ == '__main__':
 
         except Exception as e:
             print('Error processing article:', e)
+            # Remove article from list
+            articles.pop(-1)
             error_articles.append(articles[i])
 
     db_articles = []
@@ -203,7 +205,7 @@ if __name__ == '__main__':
         store_article_analytics(len(articles), SOURCE) # Store article analytics
 
         if len(error_articles) > 0:
-            with open('error_articles.txt', 'w') as f:
+            with open('sudan_tribune_error_articles.txt', 'w') as f:
                 for article in error_articles:
                     f.write(f'{article[1]}\n')
 
