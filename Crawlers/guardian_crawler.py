@@ -8,7 +8,7 @@ import sys
 load_dotenv()
 
 DEPLOYMENT = os.getenv('DEPLOYMENT')
-if sys.argv == 'initial':
+if sys.argv[1] == 'initial':
     DEPLOYMENT = False
 
 API_KEY = os.getenv('GUARDIAN_API_KEY')

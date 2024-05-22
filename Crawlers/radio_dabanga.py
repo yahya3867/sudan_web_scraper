@@ -15,7 +15,7 @@ load_dotenv()
 # https://www.dabangasudan.org/category-sitemap.xml -- categories found here
 TAGS = ['violence', 'sexual-violence', 'refugees-displaced']
 DEPLOYMENT = os.getenv('DEPLOYMENT')
-if sys.argv == 'initial':
+if sys.argv[1] == 'initial':
     DEPLOYMENT = False
 
 SOURCE = 'Radio Dabanga'
