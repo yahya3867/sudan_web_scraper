@@ -13,7 +13,9 @@ load_dotenv()
 # https://sudanwarmonitor.com/sitemap/(year) -- articles found here
 DEPLOYMENT = os.getenv('DEPLOYMENT')
 if sys.argv == 'initial':
-    DEPLOYMENT = False
+    DEPLOYMENT = 0
+print('DEPLOYMENT:', DEPLOYMENT)
+print('sys.argv:', sys.argv)
 SOURCE = 'Sudan War Monitor'
 
 # Scrapes sitemap for articles
