@@ -78,6 +78,3 @@ def scrape_article(page_num):
         #stores it into the list
         article_db.append(db_data)
     return article_db
-
-print(scrape_article(1)[0])
-
