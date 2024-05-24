@@ -1,6 +1,19 @@
 from bs4 import BeautifulSoup
 import requests
 from datetime import datetime as dt
+import os
+import itertools
+from scraping_tools import store_articles, store_most_recent, store_article_analytics
+from dotenv import load_dotenv
+import sys
+import html
+
+load_dotenv()
+
+DEPLOYMENT = os.getenv('DEPLOYMENT')
+if sys.argv[1] == 'initial':
+    DEPLOYMENT = False
+
 
 SOURCE = 'SUNA'
 
@@ -63,18 +76,91 @@ def scrape_article(page_num):
         body = ''
         for i in range(1, len(body_list)):
             body += body_list[i]
-        #find the image urls
+        # Find the image urls
         image_urls = soup.find('img')['src']
 
-        # stroes it as a dictionary
+        # stores it as a dictionary
         db_data = {'source': SOURCE,
             'headline': headline,
             'web_url': url,
             'date': date,
-            'body': str(body),
+            'body': html.unescape(body).replace('\xa0', '').replace('\r\n', '').strip(),
             'image_urls': image_urls,
             'archive_date': dt.now().strftime('%Y-%m-%d %H:%M:%S')
         }
-        #stores it into the list
+        # stores it into the list    
         article_db.append(db_data)
     return article_db
+
+# finds the last page needed to scrape based on the date
+def find_last_relevant_page():
+    
+    url = f'https://suna-sd.net/suna/24/en?page=1'
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, 'lxml')
+    # grabs the last possible page
+    last_page = int(soup.find_all('a', class_='page-link')[-2].text)
+    # the earliest relevant date for the articles
+    target_date = dt(2023, 4, 5)
+
+    # tries to relevant articles on page i
+    for i in range(1,last_page):
+        try:
+            last_article = find_articles(i)[-1]
+        except:
+            pass
+
+        # grabs date of the article and converts it to a datetime object
+        date_str = str(last_article.find('li').text)
+        date_str = date_str[date_str.find('/')-2:date_str.find('/')+17]
+        article_year = int(date_str[6:10])
+        article_month = int(date_str[3:5])
+        article_day = int(date_str[0:2])
+        article_date = dt(article_year, article_month, article_day)
+
+        # compares article date to the target date
+        if article_date < target_date:
+            return i
+
+if __name__ == '__main__':
+    articles = []
+    print(f'Starting {SOURCE} crawler')
+
+    if int(DEPLOYMENT):
+        print('Running in deployment mode')
+        articles = scrape_article(1)
+    else:
+        print('Running in initial mode')
+        last_page = find_last_relevant_page()
+        for i in range(1, last_page+1):
+            print(f'Processing page {i} of {last_page}')
+            articles += scrape_article(i)
+    
+    # Remove duplicates
+    found_articles = store_most_recent([article for article in articles], SOURCE)
+    articles = [article for article in articles if article not in found_articles]
+    
+    num_articles = len(articles)
+    
+    if num_articles == 0:
+        print('No new articles found')
+        exit()
+
+    # processes articles into the db
+    for i in range(len(articles)):
+        print('Processing:', articles[i]['headline'], f'{i + 1}/{num_articles}')
+
+    db_articles = []
+
+    for article in articles:
+        db_articles.append(article)
+    
+    try:
+        store_articles(db_articles) # Store articles in MongoDB
+        store_article_analytics(len(articles), SOURCE) # Store article analytics
+        print('Articles stored successfully')
+
+    except Exception as e:
+        print('Error storing articles:', e)
+        exit()
+
