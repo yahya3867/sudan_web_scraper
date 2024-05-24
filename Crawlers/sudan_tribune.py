@@ -21,8 +21,10 @@ from selenium.webdriver.chrome.options import Options
 # https://sudantribune.com/post_tag-sitemap.xml -- categories found here
 CATEGORIES = ['/politics/women-issues/', '/regions/warrap/', '/regions/khartoum/', '/saf-rsf-peace/', '/politics/saf-rsf-fighting/']
 DEPLOYMENT = os.getenv('DEPLOYMENT')
-if sys.argv[1] == 'initial':
-    DEPLOYMENT = False
+if len(sys.argv) > 1:
+    if sys.argv[1] == 'initial':
+        DEPLOYMENT = False
+        
 SOURCE = 'Sudan Tribune'
 
 def get_articles_from_page(soup) -> list:

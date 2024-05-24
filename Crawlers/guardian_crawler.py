@@ -8,8 +8,9 @@ import sys
 load_dotenv()
 
 DEPLOYMENT = os.getenv('DEPLOYMENT')
-if sys.argv[1] == 'initial':
-    DEPLOYMENT = False
+if len(sys.argv) > 1:
+    if sys.argv[1] == 'initial':
+        DEPLOYMENT = False
 
 API_KEY = os.getenv('GUARDIAN_API_KEY')
 CATEGORIES = ['war crimes', 'war', 'conflict', 'violence', 'military', 'rebel', 'insurgency', 'ceasefires', 'humanitarian crises',

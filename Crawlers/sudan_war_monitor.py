@@ -12,9 +12,10 @@ load_dotenv()
 # List to dict -> ['some headline', 'some url', 'some date'] -> {'headline': 'some headline', 'web-url': 'some url', 'date': 'some date'}
 # https://sudanwarmonitor.com/sitemap/(year) -- articles found here
 DEPLOYMENT = os.getenv('DEPLOYMENT')
-if sys.argv[1] == 'initial':
-    DEPLOYMENT = 0
-    
+if len(sys.argv) > 1:
+    if sys.argv[1] == 'initial':
+        DEPLOYMENT = False
+        
 SOURCE = 'Sudan War Monitor'
 
 # Scrapes sitemap for articles
