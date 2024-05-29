@@ -121,8 +121,8 @@ if __name__ == '__main__':
     # Remove duplicates
     articles = list(k for k, _ in itertools.groupby(articles)) # Remove duplicates
 
-    found_articles = store_most_recent([article[1] for article in articles], SOURCE)
-    articles = [article for article in articles if article[1] not in found_articles]
+    found_articles = store_most_recent([article for article in articles], SOURCE)
+    articles = [article for article in articles if article not in found_articles]
     
     num_articles = len(articles)
     print(num_articles)
