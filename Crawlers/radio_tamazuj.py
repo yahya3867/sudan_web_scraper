@@ -11,8 +11,10 @@ import html
 load_dotenv()
 
 DEPLOYMENT = os.getenv('DEPLOYMENT')
-if sys.argv[1] == 'initial':
-    DEPLOYMENT = False
+
+if len(sys.argv) > 1:
+    if sys.argv[1] == 'initial':
+        DEPLOYMENT = False
 
 
 SOURCE = 'Radio Tamazuj'
