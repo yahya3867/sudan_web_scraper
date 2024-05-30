@@ -127,7 +127,6 @@ if __name__ == '__main__':
     articles = [article for article in articles if article not in found_articles]
     
     num_articles = len(articles)
-    print(num_articles)
 
     if num_articles == 0:
         print('No new articles found')
