@@ -30,7 +30,7 @@ def find_articles(page_num):
     "instability", "tensions", "talks", "agreements", "resolution", "bloodshed",
     "brutality", "massacre", "fighting", "destruction", "assault", "warfare", "killing", 
     "killed", "kill",'rape', 'physical abuse', 'sexual abuse', 'child soldiers', 
-    'child abuse', 'child prostitution', 'torture',
+    'child abuse', 'child prostitution', 'torture', 'reconstruction', 'risk', 'landmines', 'peace'
     ]
 
     # stores all the articles that contains any of the key words in the headline
