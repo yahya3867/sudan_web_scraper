@@ -100,9 +100,7 @@ def find_last_relevant_page():
     url = f'https://www.darfur24.com/en/category/news-en/page/1/'
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'lxml')
-    print(response)
     retry_after = response.headers.get("Retry-After")
-    print(retry_after, 'MMMMMMMMMM')
     last_page = int(soup.find_all('a', class_='page-numbers')[-2].text)
 
     target_date = datetime(2023, 4, 5)
