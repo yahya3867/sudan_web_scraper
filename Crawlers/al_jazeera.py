@@ -93,8 +93,6 @@ def scrape_article(url):
             'image_urls': image_urls,
             'archive_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
-        print(db_data['image_urls'])
-        print()
         # stores it into the list    
         article_db.append(db_data)
     return article_db
