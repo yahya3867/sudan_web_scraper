@@ -69,7 +69,7 @@ def scrape_article(url):
         # finds the date published
         date = article.find('div', class_='date-simple css-1yjq2zp').find_all('span')[-1].text.replace('\n', '').strip()
 
-        url = 'https://www.aljazeera.com/where/sudan/' + article.find('a',class_='u-clickable-card__link')['href']
+        url = 'https://www.aljazeera.com' + article.find('a',class_='u-clickable-card__link')['href']
         response = requests.get(url)
         soup = BeautifulSoup(response.text, 'lxml')
 
