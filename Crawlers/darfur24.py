@@ -137,8 +137,10 @@ if __name__ == '__main__':
    
 
     # Remove duplicates
+    print(articles)
     articles = list(k for k, _ in itertools.groupby(articles)) # Remove duplicates
-
+    print(articles)
+  
     found_articles = store_most_recent([article[1] for article in articles], SOURCE)
     articles = [article for article in articles if article[1] not in found_articles]
     
