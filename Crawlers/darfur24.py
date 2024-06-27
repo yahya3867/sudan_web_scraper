@@ -154,7 +154,7 @@ if __name__ == '__main__':
 
     # Now that we have our valid list of articles, we can start processing them
     for i in range(len(articles)):
-        print('Processing:', articles['headline'], f'{i + 1}/{num_articles}')
+        print('Processing:', articles[i]['headline'], f'{i + 1}/{num_articles}')
 
     db_articles = []
 
