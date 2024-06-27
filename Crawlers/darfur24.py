@@ -129,7 +129,7 @@ if __name__ == '__main__':
     else:
       print('Running in initial mode')
       last_page = 63
-      i = 0
+      i = 1
       while i < last_page + 1:
           time.sleep(10)
           print(f'Processing page {i} of {last_page}')
