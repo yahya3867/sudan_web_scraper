@@ -61,6 +61,7 @@ def scrape_article(page_num):
     article_db = []
     # scrapes the article
     for article in find_articles(page_num):
+        time.sleep(2)
         # finds the deadline
         headline = article.find('h2',itemprop='headline').find('a').text
 
@@ -71,6 +72,7 @@ def scrape_article(page_num):
         response = requests.get(url)
         soup = BeautifulSoup(response.text, 'lxml')
 
+        print(response)
         # creates a list of all the body text
         body_list = [i.text for i in soup.find('div', class_="entry-the-content").find_all('p')]
 
