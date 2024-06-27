@@ -136,7 +136,6 @@ if __name__ == '__main__':
             articles += scrape_article(i)
             print(f'Processing page {i} of {last_page}')
             i+=1
-            print(i)
           except:
               time.sleep(15)
 
