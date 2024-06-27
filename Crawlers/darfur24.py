@@ -13,8 +13,8 @@ load_dotenv()
 
 DEPLOYMENT = os.getenv('DEPLOYMENT')
 if len(sys.argv) > 1:
-  if sys.argv[1] == 'initial':
-      DEPLOYMENT = False
+    if sys.argv[1] == 'initial':
+        DEPLOYMENT = False
 
 
 SOURCE = 'Darfur 24'
@@ -61,7 +61,6 @@ def scrape_article(page_num):
     article_db = []
     # scrapes the article
     for article in find_articles(page_num):
-        time.sleep(2)
         # finds the deadline
         headline = article.find('h2',itemprop='headline').find('a').text
 
@@ -72,7 +71,6 @@ def scrape_article(page_num):
         response = requests.get(url)
         soup = BeautifulSoup(response.text, 'lxml')
 
-        print(response)
         # creates a list of all the body text
         body_list = [i.text for i in soup.find('div', class_="entry-the-content").find_all('p')]
 
@@ -102,7 +100,6 @@ def find_last_relevant_page():
     url = f'https://www.darfur24.com/en/category/news-en/page/1/'
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'lxml')
-    retry_after = response.headers.get("Retry-After")
     last_page = int(soup.find_all('a', class_='page-numbers')[-2].text)
 
     target_date = datetime(2023, 4, 5)
@@ -132,16 +129,14 @@ if __name__ == '__main__':
     else:
       print('Running in initial mode')
       last_page = find_last_relevant_page()
-      time.sleep(300)
       for i in range(1, last_page+1):
           time.sleep(10)
           print(f'Processing page {i} of {last_page}')
           articles += scrape_article(i)
-   
 
     # Remove duplicates
     articles = list(k for k, _ in itertools.groupby(articles)) # Remove duplicates
-  
+
     found_articles = store_most_recent([article for article in articles], SOURCE)
     articles = [article for article in articles if article not in found_articles]
     
@@ -154,7 +149,7 @@ if __name__ == '__main__':
 
     # Now that we have our valid list of articles, we can start processing them
     for i in range(len(articles)):
-        print('Processing:', articles[i]['headline'], f'{i + 1}/{num_articles}')
+        print('Processing:', articles['headline'], f'{i + 1}/{num_articles}')
 
     db_articles = []
 
