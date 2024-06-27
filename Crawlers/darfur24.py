@@ -130,6 +130,7 @@ if __name__ == '__main__':
     else:
       print('Running in initial mode')
       last_page = find_last_relevant_page()
+      time.sleep(300)
       for i in range(1, last_page+1):
           time.sleep(10)
           print(f'Processing page {i} of {last_page}')
