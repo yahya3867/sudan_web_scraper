@@ -131,14 +131,12 @@ if __name__ == '__main__':
       last_page = 63
       i = 1
       while i < last_page + 1:
-          time.sleep(10)
-          print(f'Processing page {i} of {last_page}')
-          articles += scrape_article(i)
           try:
             time.sleep(10)
             articles += scrape_article(i)
             print(f'Processing page {i} of {last_page}')
             i+=1
+            print(i)
           except:
               time.sleep(15)
 
