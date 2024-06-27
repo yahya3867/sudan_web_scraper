@@ -129,10 +129,18 @@ if __name__ == '__main__':
     else:
       print('Running in initial mode')
       last_page = find_last_relevant_page()
-      for i in range(1, last_page+1):
+      i = 0
+      while i < last_page + 1
           time.sleep(10)
           print(f'Processing page {i} of {last_page}')
           articles += scrape_article(i)
+          try:
+            time.sleep(10)
+            articles += scrape_article(i)
+            print(f'Processing page {i} of {last_page}')
+            i+=1
+          except:
+              time.sleep(15)
 
     # Remove duplicates
     articles = list(k for k, _ in itertools.groupby(articles)) # Remove duplicates
