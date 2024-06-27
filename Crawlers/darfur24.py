@@ -128,7 +128,7 @@ if __name__ == '__main__':
         articles = scrape_article(1)
     else:
       print('Running in initial mode')
-      last_page = find_last_relevant_page()
+      last_page = 63
       i = 0
       while i < last_page + 1
           time.sleep(10)
