@@ -51,13 +51,14 @@ def scrape_article(url):
     except Exception as e:
         print('Error getting date:', e)
         date = 'No date found'
+        return None
     
     try:
         body_content = soup.find('div', class_='body markup').find_all(['p', 'blockquote'])
 
     except Exception as e:
         print('Error getting body content:', e)
-        body_content = []
+        return None
 
     try:
         images = soup.find('div', class_='body markup').find_all('img')
@@ -115,7 +116,9 @@ if __name__ == "__main__":
 
         print('Processing:', articles[i][1], f'{i + 1}/{num_articles}')
         article_data = scrape_article(articles[i][1])
-        articles[i] += article_data
+        
+        if article_data:
+            articles[i] += article_data
 
     db_articles = []
 

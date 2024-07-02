@@ -206,7 +206,6 @@ if __name__ == '__main__':
         print('Running in initial mode')
         articles = init_run()
 
-    Remove duplicates
     articles = list(k for k, _ in itertools.groupby(articles)) # Remove duplicates
 
     found_articles = store_most_recent([article for article in articles], SOURCE)
