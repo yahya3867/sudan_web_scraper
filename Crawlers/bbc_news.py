@@ -177,10 +177,10 @@ def init_run():
 
             artcl_date = date(year, month, day)
 
-            time.sleep(5)
+            time.sleep(10)
 
-            next_page_button = driver.find_element(By.CSS_SELECTOR, 'button[data-testid="pagination-next-button"]')
-            next_page_button.click()
+            next_button = driver.find_element(By.CSS_SELECTOR, '[data-testid="pagination-next-button"]')
+            driver.execute_script("arguments[0].click();", next_button)
 
             page += 1
             print(f'Found page {page}')
