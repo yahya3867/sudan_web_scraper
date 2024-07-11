@@ -97,6 +97,7 @@ def scrape_article(page_num):
                         body += body_list[i]
                         body += ' '
                 except:
+                    pass
                 # Find the image urls
                 try:
                     image_urls = soup.find_all('img')
