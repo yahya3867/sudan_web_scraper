@@ -171,7 +171,6 @@ def find_last_relevant_page():
 
 
 
-print(find_last_relevant_page())
 if __name__ == '__main__':
     articles = []
     print(f'Starting {SOURCE} crawler')
