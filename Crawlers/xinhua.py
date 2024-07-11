@@ -85,7 +85,6 @@ def scrape_article(page_num):
                     EC.presence_of_element_located((By.ID, "detailContent"))
                 )
                 
-                print(driver.page_source)
                 soup = BeautifulSoup(driver.page_source, 'lxml')
 
                 # creates a list of all the body text
@@ -98,7 +97,6 @@ def scrape_article(page_num):
                         body += body_list[i]
                         body += ' '
                 except:
-                    print(headline, url)
                 # Find the image urls
                 try:
                     image_urls = soup.find_all('img')
