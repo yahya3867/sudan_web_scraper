@@ -182,8 +182,8 @@ if __name__ == '__main__':
         last_page = 60
         for i in range(1, last_page+1):
             print(f'Processing page {i} of {last_page}')
-            articles += scrape_article(1)
-            time.sleep(10)
+            articles += scrape_article(i)
+            time.sleep(20)
 
     # Remove duplicates
     articles = list(k for k, _ in itertools.groupby(articles)) # Remove duplicates
