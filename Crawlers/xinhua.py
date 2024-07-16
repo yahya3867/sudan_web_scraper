@@ -179,7 +179,7 @@ if __name__ == '__main__':
         articles = scrape_article(1)
     else:
         print('Running in initial mode')
-        last_page = 30
+        last_page = 3
         for i in range(1, last_page+1):
             print(f'Processing page {i} of {last_page}')
             articles += scrape_article(i)
