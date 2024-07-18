@@ -37,7 +37,7 @@ def scrape_article(page_num):
     article_db = []
     # scrapes the article
     for article in find_articles(page_num):
-        time.sleep(30)
+        time.sleep(10)
         # finds the deadline
         headline = article.find('span', class_ ='headline').text
 
