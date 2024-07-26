@@ -111,3 +111,45 @@ def scrape_articles():
 
     return db_list
 
+if __name__ == '__main__':
+    articles = []
+    print(f'Starting {SOURCE} crawler')
+
+    if int(DEPLOYMENT):
+        print('Running in deployment mode')
+        articles = scrape_article()
+    else:
+        print('Running in initial mode')
+        articles = scrape_article()
+
+    # Remove duplicates
+    articles = list(k for k, _ in itertools.groupby(articles)) # Remove duplicates
+
+    found_articles = store_most_recent([article for article in articles], SOURCE)
+    articles = [article for article in articles if article not in found_articles]
+    
+    num_articles = len(articles)
+    print(num_articles)
+
+    if num_articles == 0:
+        print('No new articles found')
+        exit()
+
+    # Now that we have our valid list of articles, we can start processing them
+    for i in range(len(articles)):
+        print('Processing:', articles[i]['headline'], f'{i + 1}/{num_articles}')
+
+    db_articles = []
+
+    for article in articles:
+        db_articles.append(article)
+    
+    try:
+        store_articles(db_articles) # Store articles in MongoDB
+        store_article_analytics(len(articles), SOURCE) # Store article analytics
+        print('Articles stored successfully')
+
+    except Exception as e:
+        print('Error storing articles:', e)
+        exit()
+
