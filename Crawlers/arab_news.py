@@ -31,7 +31,7 @@ SOURCE = 'Arab News'
 current_date = date.today()
 
 # finds all the articles that relates to the Sudan war, war crimes, violence, etc
-def scrape_articles():
+def scrape_article():
     chrome_options = Options()
     chrome_options.add_argument('--ignore-certificate-errors')
     chrome_options.add_argument('--ignore-ssl-errors')
