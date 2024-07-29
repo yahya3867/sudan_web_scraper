@@ -124,6 +124,7 @@ def init_run():
 
     db_list = []
     try:
+        driver.get(URL)
         last_date = current_date
         while target_date < last_date:
             driver.execute_script("window.scrollBy(0, 8000);")
