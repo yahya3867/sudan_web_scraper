@@ -111,6 +111,114 @@ def scrape_article():
 
     return db_list
 
+def init_run():
+    chrome_options = Options()
+    chrome_options.add_argument('--ignore-certificate-errors')
+    chrome_options.add_argument('--ignore-ssl-errors')
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument("--window-size=1920,1080")
+
+
+    driver = webdriver.Chrome(options=chrome_options)
+    driver.get("https://www.arabnews.com/tags/sudan") 
+
+    db_list = []
+    try:
+        last_date = current_date
+        while target_date < last_date:
+            driver.execute_script("window.scrollBy(0, 8000);")
+            time.sleep(3)
+            buttons = driver.find_elements(By.TAG_NAME, 'button')
+            button_text = [i.text for i in buttons]
+            for i in range(len(button_text)):
+                if button_text[i] == 'Load more':
+                    button = buttons[i]
+                    print(button)
+                    button.click()
+                    time.sleep(3)
+            article = driver.find_elements(By.CSS_SELECTOR, 'div.article-item-info')[-1]
+            times = article.find_element(By.TAG_NAME,'time').text
+            timestrings = [str(times)]
+            a_date = ''
+
+            for timestring in timestrings:
+                dt = dateparser.parse(timestring)
+                a_date = dt.strftime("%Y-%m-%d")
+            year = int(a_date[0:4])
+            month = int(a_date[5:7])
+            day = int(a_date[8:10])
+
+            if date(year, month, day) == last_date:
+                break
+
+            last_date = date(year, month, day)
+
+        articles = driver.find_elements(By.CSS_SELECTOR, 'div.article-item-info')
+
+        headlines = []
+        urls = []
+        dates = []
+
+
+        for article in articles:
+            element = article.find_element(By.TAG_NAME, 'a')
+            
+            headlines.append(element.text.strip())
+            
+            urls.append(element.get_attribute('href'))
+
+            times = article.find_element(By.TAG_NAME,'time').text
+            timestrings = [str(times)]
+            a_date = ''
+
+            for timestring in timestrings:
+                dt = dateparser.parse(timestring)
+                a_date = dt.strftime("%Y-%m-%d")
+                dates.append(a_date)
+
+        img = []
+        body_list = []
+
+        for i in urls:
+            time.sleep(2)
+
+            new_driver = webdriver.Chrome(options=chrome_options)
+            new_driver.get(i)
+
+            try:
+                article = new_driver.find_element(By.TAG_NAME,'article')
+
+                big_body = [i.text for i in article.find_elements(By.TAG_NAME, 'p')]
+                body = ''
+                for i in range(1, len(big_body)):
+                    body += big_body[i]
+                    body += ' '
+
+                body_list.append(body)
+
+                img.append(article.find_element(By.TAG_NAME,'img').get_attribute('src'))
+
+            except:
+                pass
+            finally:
+                new_driver.quit()
+        for i in range(len(headlines)):
+            db_data = {'source': SOURCE,
+                    'headline': headlines[i],
+                    'web_url': urls[i],
+                    'date': dates[i],
+                    'body': body_list[i],
+                    'image_urls': img[i],
+                    'archive_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                }
+            db_list.append(db_data)
+    except:
+        pass
+    finally:
+        driver.quit()
+
+    return db_list
+
 if __name__ == '__main__':
     articles = []
     print(f'Starting {SOURCE} crawler')
@@ -120,7 +228,7 @@ if __name__ == '__main__':
         articles = scrape_article()
     else:
         print('Running in initial mode')
-        articles = scrape_article()
+        articles = init_run()
 
     # Remove duplicates
     articles = list(k for k, _ in itertools.groupby(articles)) # Remove duplicates
