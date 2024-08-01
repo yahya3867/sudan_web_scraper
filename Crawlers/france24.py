@@ -119,10 +119,6 @@ def scrape_articles():
         driver.quit()
 
     return db_list
-
-x = scrape_articles()
-print(len(x),x[0])
-
 def init_run():
     chrome_options = Options()
     chrome_options.add_argument('--ignore-certificate-errors')
