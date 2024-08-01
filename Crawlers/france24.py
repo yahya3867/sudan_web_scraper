@@ -134,9 +134,10 @@ def init_run():
     db_list = []
     try:
         last_date = current_date
-        url = URL
+        url = 'https://www.france24.com/en/tag/sudan/3/#pager'
+        page = 3
         while target_date < last_date:
-
+            print(f'Processing page {page}')
             driver.get(url) 
             time.sleep(3)
             try:
@@ -212,7 +213,8 @@ def init_run():
             year = int(test_date[6:10])
             last_date = date(year, month, day)
 
-            url = driver.find_element(By.CSS_SELECTOR, "a.m-pagination__item__link[href*='/en/tag/sudan/2/#pager']").get_attribute('href')
+            url = driver.find_element(By.CSS_SELECTOR, f"a.m-pagination__item__link[href*='/en/tag/sudan/{page + 1}/#pager']").get_attribute('href')
+            page += 1
             time.sleep(3)
     except Exception as e:
         print(e)
