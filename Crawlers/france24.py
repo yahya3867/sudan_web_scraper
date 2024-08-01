@@ -230,6 +230,7 @@ if __name__ == '__main__':
         print('Running in deployment mode')
         articles = scrape_articles()
     else:
+        print('Running in initial mode')
         articles = init_run()
     # Remove duplicates
     articles = list(k for k, _ in itertools.groupby(articles)) # Remove duplicates
