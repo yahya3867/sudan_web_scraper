@@ -134,8 +134,8 @@ def init_run():
     db_list = []
     try:
         last_date = current_date
-        url = 'https://www.france24.com/en/tag/sudan/3/#pager'
-        page = 3
+        url = URL
+        page = 1
         while target_date < last_date:
             print(f'Processing page {page}')
             driver.get(url) 
