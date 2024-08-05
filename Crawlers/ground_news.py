@@ -219,8 +219,6 @@ def init_run():
         db_list.append(db_data)
     return db_list
 
-print(init_run())        
-
 if __name__ == '__main__':
     articles = []
     print(f'Starting {SOURCE} crawler')
