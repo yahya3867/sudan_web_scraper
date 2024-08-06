@@ -237,10 +237,10 @@ if __name__ == '__main__':
     # Remove duplicates
     articles = list(k for k, _ in itertools.groupby(articles)) # Remove duplicates
 
-    found_articles = store_most_recent([article['date'] for article in articles], SOURCE)
+    found_articles = store_most_recent([article['web_url'] for article in articles], SOURCE)
     print(found_articles)
     print(len(found_articles))
-    articles = [article for article in articles if article['date'] not in found_articles]
+    articles = [article for article in articles if article['web_url'] not in found_articles]
     
     num_articles = len(articles)
     print(num_articles)
