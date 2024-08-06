@@ -5,6 +5,6 @@
 		}
 	],
 	"settings": {
-		"python.defaultInterpreterPath": "C:\\Users\\tayve\\.conda\\envs\\sudan_web_scraper\\python.exe"
+		"python.defaultInterpreterPath": "/home/tayven/miniconda3/envs/sudan_web_scraper"
 	}
 }

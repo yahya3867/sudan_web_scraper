@@ -46,7 +46,7 @@ def scrape_article(url):
 
     # We get tiny errors from very few articles, so we need to handle them
     try:
-        date = soup.find('div', class_='pencraft pc-reset _color-pub-secondary-text_1k90y_207 _line-height-20_1k90y_95 _font-meta_1k90y_131 _size-11_1k90y_35 _weight-medium_1k90y_162 _transform-uppercase_1k90y_242 _reset_1k90y_1 _meta_1k90y_442').text.strip()
+        date = soup.find('div', class_='pencraft pc-reset _color-pub-secondary-text_3axfk_207 _line-height-20_3axfk_95 _font-meta_3axfk_131 _size-11_3axfk_35 _weight-medium_3axfk_162 _transform-uppercase_3axfk_242 _reset_3axfk_1 _meta_3axfk_442').text.strip()
 
     except Exception as e:
         print('Error getting date:', e)
