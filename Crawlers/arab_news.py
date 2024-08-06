@@ -239,7 +239,8 @@ if __name__ == '__main__':
 
     found_articles = store_most_recent([article for article in articles], SOURCE)
     print(found_articles)
-    articles = [article for article in articles if article not in found_articles]
+    print(len(found_articles)
+    articles = [article for article in articles if article['headline'] not in found_articles]
     
     num_articles = len(articles)
     print(num_articles)
