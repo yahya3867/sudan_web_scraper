@@ -96,7 +96,7 @@ def scrape_article():
 
         # combines it as one cohesive paragraph
         body = ''
-        for i in range(1, len(body_list)):
+        for i in range(0, len(body_list)):
             body += body_list[i]
             body += ' '
         # Find the image urls
@@ -197,7 +197,7 @@ def init_run():
 
         # combines it as one cohesive paragraph
         body = ''
-        for i in range(1, len(body_list)):
+        for i in range(0, len(body_list)):
             body += body_list[i]
             body += ' '
         # Find the image urls
