@@ -139,8 +139,8 @@ if __name__ == '__main__':
             articles += scrape_article(i)
     
     # Remove duplicates
-    found_articles = store_most_recent([article for article in articles], SOURCE)
-    articles = [article for article in articles if article not in found_articles]
+    found_articles = store_most_recent([article['web_url'] for article in articles], SOURCE)
+    articles = [article for article in articles if article['web_url'] not in found_articles]
     
     num_articles = len(articles)
     
