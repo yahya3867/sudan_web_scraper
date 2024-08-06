@@ -36,6 +36,8 @@ def scrape_article():
     chrome_options.add_argument('--ignore-certificate-errors')
     chrome_options.add_argument('--ignore-ssl-errors')
     chrome_options.add_argument('--headless')
+    chrome_options.add_argument("--window-size=1920,1080")
+    chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36")
 
     driver = webdriver.Chrome(options=chrome_options)
     driver.get("https://www.arabnews.com/tags/sudan") 
@@ -93,7 +95,6 @@ def scrape_article():
                 pass
             finally:
                 new_driver.quit()
-        print(len(headlines),len(urls),len(dates),len(body_list),len(img))
         for i in range(len(headlines)):
             db_data = {'source': SOURCE,
                     'headline': headlines[i],
@@ -117,6 +118,7 @@ def init_run():
     chrome_options.add_argument('--ignore-ssl-errors')
     chrome_options.add_argument('--headless')
     chrome_options.add_argument("--window-size=1920,1080")
+    chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36")
 
 
     driver = webdriver.Chrome(options=chrome_options)
@@ -124,8 +126,8 @@ def init_run():
 
     db_list = []
     try:
-        driver.get(URL)
         last_date = current_date
+        page = 1
         while target_date < last_date:
             driver.execute_script("window.scrollBy(0, 8000);")
             time.sleep(3)
@@ -134,7 +136,6 @@ def init_run():
             for i in range(len(button_text)):
                 if button_text[i] == 'Load more':
                     button = buttons[i]
-                    print(button)
                     button.click()
                     time.sleep(3)
             article = driver.find_elements(By.CSS_SELECTOR, 'div.article-item-info')[-1]
@@ -151,8 +152,9 @@ def init_run():
 
             if date(year, month, day) == last_date:
                 break
-
+            print(f'Found page {page}')
             last_date = date(year, month, day)
+            page+=1
 
         articles = driver.find_elements(By.CSS_SELECTOR, 'div.article-item-info')
 
@@ -220,6 +222,7 @@ def init_run():
 
     return db_list
 
+
 if __name__ == '__main__':
     articles = []
     print(f'Starting {SOURCE} crawler')
@@ -235,6 +238,7 @@ if __name__ == '__main__':
     articles = list(k for k, _ in itertools.groupby(articles)) # Remove duplicates
 
     found_articles = store_most_recent([article for article in articles], SOURCE)
+    print(found_articles)
     articles = [article for article in articles if article not in found_articles]
     
     num_articles = len(articles)
@@ -254,8 +258,8 @@ if __name__ == '__main__':
         db_articles.append(article)
     
     try:
-        store_articles(db_articles) # Store articles in MongoDB
-        store_article_analytics(len(articles), SOURCE) # Store article analytics
+        #store_articles(db_articles) # Store articles in MongoDB
+        #store_article_analytics(len(articles), SOURCE) # Store article analytics
         print('Articles stored successfully')
 
     except Exception as e:
