@@ -258,8 +258,8 @@ if __name__ == '__main__':
         db_articles.append(article)
     
     try:
-        #store_articles(db_articles) # Store articles in MongoDB
-        #store_article_analytics(len(articles), SOURCE) # Store article analytics
+        store_articles(db_articles) # Store articles in MongoDB
+        store_article_analytics(len(articles), SOURCE) # Store article analytics
         print('Articles stored successfully')
 
     except Exception as e:
