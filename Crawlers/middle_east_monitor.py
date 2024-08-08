@@ -163,7 +163,8 @@ if __name__ == '__main__':
             print(f'Processing page {i} of {last_page}')
             articles += scrape_article(i)
             i+=1
-          except:
+          except Exception as e:
+              print(e)
               time.sleep(5)
 
     # Remove duplicates
