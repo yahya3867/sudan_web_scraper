@@ -1,5 +1,5 @@
 import requests
-from scraping_tools import parse_articles, store_articles, store_article_analytics
+from scraping_tools import parse_articles, store_articles, store_article_analytics, identify_date_format
 import os
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
@@ -47,7 +47,7 @@ def page_articles(url, params):
             'source': 'The Guardian',
             'web_url': web_url,
             'headline': headline,
-            'date': date,
+            'date': identify_date_format(date).strftime('%Y/%m/%d'),
             'body': body,
             'image_urls': image_urls,
             'archive_date': ARCHIVE_DATE

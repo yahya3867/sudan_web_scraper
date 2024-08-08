@@ -3,7 +3,7 @@ import requests
 from datetime import datetime, date
 import os
 import itertools
-from scraping_tools import store_articles, store_most_recent, store_article_analytics
+from scraping_tools import store_articles, store_most_recent, store_article_analytics, identify_date_format
 from dotenv import load_dotenv
 import sys
 import html
@@ -87,7 +87,7 @@ def scrape_article():
 
         for timestring in timestrings:
             dt = dateparser.parse(timestring)
-            a_date = dt.strftime("%Y-%m-%d")
+            a_date = dt.strftime('%Y/%m/%d')
 
         pub_date = a_date
 

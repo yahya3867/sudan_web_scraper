@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 from pymongo import MongoClient
 import os
 from datetime import datetime
+import datefinder
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -137,3 +138,14 @@ def store_most_recent(article_urls: list, source: str):
     except Exception as e:
         print('Error storing articles:', e)
         return False
+
+def identify_date_format(date_string):
+    try:
+        matches = list(datefinder.find_dates(date_string))
+        if matches:
+            return matches[0]
+        return None
+
+    except Exception as e:
+        print(f"Error parsing date: {e}")
+        return None

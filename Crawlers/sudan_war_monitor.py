@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 import os
 from datetime import datetime
-from scraping_tools import store_articles, store_most_recent, store_article_analytics
+from scraping_tools import store_articles, store_most_recent, store_article_analytics, identify_date_format
 from time import sleep
 from dotenv import load_dotenv
 import sys
@@ -132,7 +132,7 @@ if __name__ == "__main__":
         db_data = {'source': SOURCE,
             'headline': headline,
             'web_url': web_url,
-            'date': date,
+            'date': identify_date_format(date).strftime('%Y/%m/%d'),
             'body': body,
             'image_urls': image_urls,
             'archive_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')

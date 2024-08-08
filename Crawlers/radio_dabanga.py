@@ -3,7 +3,7 @@ import requests
 import os
 import itertools
 from datetime import datetime
-from scraping_tools import store_articles, store_most_recent, store_article_analytics
+from scraping_tools import store_articles, store_most_recent, store_article_analytics, identify_date_format
 import cv2
 import numpy as np
 from dotenv import load_dotenv
@@ -173,7 +173,7 @@ if __name__ == '__main__':
             'headline': headline,
             'web_url': web_url,
             'date': date,
-            'body': body,
+            'body': identify_date_format(body).strftime('%Y/%m/%d'),
             'image_urls': image_urls,
             'archive_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }

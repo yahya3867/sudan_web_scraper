@@ -3,7 +3,7 @@ import requests
 from datetime import datetime, date
 import os
 import itertools
-from scraping_tools import store_articles, store_most_recent, store_article_analytics
+from scraping_tools import store_articles, store_most_recent, store_article_analytics, identify_date_format
 from dotenv import load_dotenv
 import sys
 import html
@@ -86,7 +86,7 @@ def scrape_article(page_num, curr_date, prior_date):
         db_data = {'source': SOURCE,
             'headline': headline,
             'web_url': url,
-            'date': date,
+            'date': identify_date_format(date).strftime('%Y/%m/%d'),
             'body': html.unescape(str(body)).replace('\xa0', '').replace('\r\n', '').strip(),
             'image_urls': image_urls,
             'archive_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
