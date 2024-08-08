@@ -155,13 +155,13 @@ if __name__ == '__main__':
         articles = scrape_article(1)
     else:
       print('Running in initial mode')
-      last_page = find_last_relevant_page()
+      last_page = 26
       i = 1
       while i <= last_page:
           try:
             time.sleep(2)
-            articles += scrape_article(i)
             print(f'Processing page {i} of {last_page}')
+            articles += scrape_article(i)
             i+=1
           except:
               time.sleep(5)
