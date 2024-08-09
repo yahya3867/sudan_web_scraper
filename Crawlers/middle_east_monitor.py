@@ -152,16 +152,16 @@ if __name__ == '__main__':
 
     if int(DEPLOYMENT):
         print('Running in deployment mode')
-        articles = scrape_article(1)
+        articles = scrape_articles(1)
     else:
       print('Running in initial mode')
-      last_page = 26
+      last_page = find_last_relevant_page()
       i = 1
       while i <= last_page:
           try:
             time.sleep(2)
             print(f'Processing page {i} of {last_page}')
-            articles += scrape_article(i)
+            articles += scrape_articles(i)
             i+=1
           except Exception as e:
               print(e)
