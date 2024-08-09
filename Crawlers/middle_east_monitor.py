@@ -100,7 +100,6 @@ def scrape_articles(page_num):
                 }
             db_list.append(db_data)
     except Exception as e:
-        print(e)
         pass
     finally:
         driver.quit()
@@ -155,7 +154,7 @@ if __name__ == '__main__':
         articles = scrape_articles(1)
     else:
       print('Running in initial mode')
-      last_page = 26
+      last_page = find_last_relevant_page()
       i = 1
       while i <= last_page:
           try:
