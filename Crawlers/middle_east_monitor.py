@@ -81,7 +81,7 @@ def scrape_articles(page_num):
             except:
                 img.append('None')
             body = ''
-            container = new_driver.find_element(By.XPATH, "//div[contains(@class, 'memo-single-news-content') and contains(@class, '0')]")
+            container = new_driver.find_element(By.XPATH, "/html/body/div[3]/div/section[2]/div/div[4]/div[1]/div[2]")
             big_body = [i.text for i in container.find_elements(By.TAG_NAME, 'p')]
             for i in range(0, len(big_body)):
                 body += big_body[i]
