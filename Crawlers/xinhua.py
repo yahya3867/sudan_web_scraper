@@ -100,10 +100,9 @@ def scrape_article(page_num):
                     pass
                 # Find the image urls
                 try:
-                    image_urls = soup.find_all('img')
-                    image_urls = [i['src'] for i in image_urls]
+                    image_url = soup.find('img', class_ = 'articleImage')
                 except:
-                    image_urls = 'No Images'
+                    image_url = 'No Images'
 
                 # stores it as a dictionary
                 db_data = {'source': SOURCE,
@@ -111,7 +110,7 @@ def scrape_article(page_num):
                     'web_url': url,
                     'date': identify_date_format(date).strftime('%Y/%m/%d'),
                     'body': html.unescape(str(body)).replace('\xa0', '').replace('\r\n', '').replace('&nbsp;',' ').strip(),
-                    'image_urls': image_urls,
+                    'image_urls': image_url,
                     'archive_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 }
                 # stores it into the list    
