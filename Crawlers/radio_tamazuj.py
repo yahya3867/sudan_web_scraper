@@ -40,6 +40,7 @@ def find_articles(page_num, curr_date, prior_date):
     # defines the url based on the given page number
     url = f'https://www.radiotamazuj.org/en/?s=sudan&post_date={prior_date}+{curr_date}'
     response = requests.get(url)
+    print(response)
     soup = BeautifulSoup(response.text, 'lxml')
  
     # finds all the articles on that page
