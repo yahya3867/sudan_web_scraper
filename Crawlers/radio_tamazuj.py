@@ -38,7 +38,8 @@ def find_articles(page_num, curr_date, prior_date):
     relevant_articles = []
 
     # defines the url based on the given page number
-    url = f'https://www.radiotamazuj.org/en/?s=sudan&post_date={prior_date}+{curr_date}'
+    
+    url = f'https://www.radiotamazuj.org/en/?s=sudan&post_date=2024-08-11+2024-08-13'
     response = requests.get(url)
     print(response, url)
     soup = BeautifulSoup(response.text, 'lxml')
