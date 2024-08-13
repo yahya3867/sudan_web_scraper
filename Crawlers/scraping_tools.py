@@ -47,8 +47,8 @@ def store_articles(articles: list, api_urls=None):
     
     # Attempt to store articles
     try:
-        article_column = db[os.getenv('MONGO_ARTICLE_COLLECTION')]
-        article_column.insert_many(articles)
+        article_collection = db[os.getenv('MONGO_ARTICLE_COLLECTION')]
+        article_collection.insert_many(articles)
 
     except Exception as e:
         print('Error storing articles:', e)
@@ -57,8 +57,8 @@ def store_articles(articles: list, api_urls=None):
     if api_urls:
         # Attempt to store articles
         try:
-            article_column = db[os.getenv('MONGO_API_COLLECTION')]
-            article_column.insert_many(api_urls)
+            article_collection = db[os.getenv('MONGO_API_COLLECTION')]
+            article_collection.insert_many(api_urls)
             return True
 
         except Exception as e:
