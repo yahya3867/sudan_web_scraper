@@ -172,8 +172,8 @@ if __name__ == '__main__':
         db_data = {'source': SOURCE,
             'headline': headline,
             'web_url': web_url,
-            'date': date,
-            'body': identify_date_format(body).strftime('%Y/%m/%d'),
+            'date': identify_date_format(date).strftime('%Y/%m/%d'),
+            'body': body,
             'image_urls': image_urls,
             'archive_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
