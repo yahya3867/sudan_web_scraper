@@ -29,6 +29,7 @@ if len(sys.argv) > 1:
 URL = f'https://www.arabnews.com/tags/sudan'
 SOURCE = 'Arab News'
 current_date = date.today()
+target_date = date(2023,4,5)
 
 # finds all the articles that relates to the Sudan war, war crimes, violence, etc
 def scrape_article():
