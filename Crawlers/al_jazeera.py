@@ -29,7 +29,7 @@ if len(sys.argv) > 1:
 
 SOURCE = 'Al Jazeera'
 current_date = date.today()
-target_date = date(2024,8,5)
+target_date = date(2023,4,5)
 URL = f'https://www.aljazeera.com/where/sudan/'
 
 def find_articles(url):
