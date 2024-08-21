@@ -201,8 +201,8 @@ def init_run():
 
                 img.append(article.find_element(By.TAG_NAME,'img').get_attribute('src'))
 
-            except:
-                pass
+            except Exception as e:
+                print(e)
             finally:
                 new_driver.quit()
         for i in range(len(headlines)):
@@ -215,8 +215,8 @@ def init_run():
                     'archive_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 }
             db_list.append(db_data)
-    except:
-        pass
+    except Exception as e:
+        print(e)
     finally:
         driver.quit()
 
