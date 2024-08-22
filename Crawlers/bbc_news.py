@@ -50,11 +50,14 @@ def scrape_article():
     # scrapes the article
     for article in find_articles():
         try:
-            headline = article.find('h2',class_='sc-4fedabc7-3 bvDsJq').text
+            print('HHHHHHHHHHHHHHHHHH')
+            headline = article.find('h2',class_='sc-2c72d884-3 fWWpXO').text
+            print('UUUUUUUUUUUUUUUUUUUUUUUUU')
 
-            url = 'https://www.bbc.com' + article.find('a',class_='sc-2e6baa30-0 gILusN')['href']
+            url = 'https://www.bbc.com' + article.find('a',class_='sc-5e33cc43-0 jZSdZm')['href']
             response = requests.get(url)
             soup = BeautifulSoup(response.text, 'lxml')
+            print('DDDDDDDDDDDDDDDDDDDDDDDD')
 
             # finds the date published
             time = soup.find('time', class_='sc-1d2e900b-10 WPunI').text
@@ -64,7 +67,7 @@ def scrape_article():
             for timestring in timestrings:
                 dt = dateparser.parse(timestring)
                 a_date = dt.strftime("%Y-%m-%d")
-
+            print('BBBBBBBBBBBBBBBBBBB')
             # creates a list of all the body text
             body_list = [i.text for i in soup.find_all('p', class_ = 'sc-eb7bd5f6-0 fYAfXe')]
 
@@ -73,7 +76,7 @@ def scrape_article():
             for i in range(0, len(body_list)):
                 body += body_list[i]
                 body += ' '
-
+            print('IIIIIIIIIIIIIIIIIIIIII')
             # Find the image urls
             image_urls = soup.find_all('img')
             image_urls = [i['src'] for i in image_urls]
