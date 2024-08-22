@@ -48,7 +48,9 @@ def scrape_article():
     # stores all the article data
     article_db = []
     # scrapes the article
-    for article in find_articles():
+    articles = find_articles()
+    print(len(articles))
+    for article in articles:
         try:
             headline = article.find('h2', attrs={'data-testid': 'card-headline'}).text
             url = 'https://www.bbc.com' + article.find('a', attrs={'data-testid': 'internal-link'})['href']
