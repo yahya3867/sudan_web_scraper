@@ -49,7 +49,6 @@ def scrape_article():
     article_db = []
     # scrapes the article
     articles = find_articles()
-    print(len(articles))
     for article in articles:
         try:
             headline = article.find('h2', attrs={'data-testid': 'card-headline'}).text
