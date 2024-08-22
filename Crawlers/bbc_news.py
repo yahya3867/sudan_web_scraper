@@ -55,7 +55,6 @@ def scrape_article():
             headline = article.find('h2', attrs={'data-testid': 'card-headline'}).text
             url = 'https://www.bbc.com' + article.find('a', attrs={'data-testid': 'internal-link'})['href']
             time = article.find('span', attrs={'data-testid': "card-metadata-lastupdated"}).text
-            print(time, headline)
             response = requests.get(url)
             soup = BeautifulSoup(response.text, 'lxml')
             # finds the date published
@@ -66,7 +65,7 @@ def scrape_article():
                 dt = dateparser.parse(timestring)
                 a_date = dt.strftime("%Y-%m-%d")
             # creates a list of all the body text
-            #body_list = [i.text for i in soup.find_all('p', class_ = 'sc-eb7bd5f6-0 fYAfXe')]
+            body_list = [i.text for i in soup.find_all('p', class_ = 'sc-eb7bd5f6-0 fYAfXe')]
 
             # combines it as one cohesive paragraph
             body = ''
