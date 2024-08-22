@@ -51,14 +51,13 @@ def scrape_article():
     for article in find_articles():
         try:
             headline = article.find('h2', attrs={'data-testid': 'card-headline'}).text
-            print('UUUUUUUUUUUUUUUUUUUUUUUUU')
             url = 'https://www.bbc.com' + article.find('a', attrs={'data-testid': 'internal-link'})['href']
             response = requests.get(url)
             soup = BeautifulSoup(response.text, 'lxml')
             print('DDDDDDDDDDDDDDDDDDDDDDDD')
 
             # finds the date published
-            time = soup.find('time', class_='sc-1d2e900b-10 WPunI').text
+            time = soup.find('time', class_='sc-2b5e3b35-2 fkLXLN').text
             timestrings = [str(time)]
             a_date = ''
 
