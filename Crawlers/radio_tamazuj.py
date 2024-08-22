@@ -114,11 +114,11 @@ if __name__ == '__main__':
         articles = scrape_article(1, yesterday, current_date)
     else:
         print('Running in initial mode')
-        last_page = find_last_relevant_page()
-        last_date = '2024-04-05'
+        last_page = 11
+        last_date = '2024-06-16'
         for i in range(1, last_page+1):
             print(f'Processing page {i} of {last_page}')
-            articles += scrape_article(i, yesterday, current_date)
+            articles += scrape_article(i, last_date, current_date)
    
     # Remove duplicates
     articles = list(k for k, _ in itertools.groupby(articles)) # Remove duplicates
