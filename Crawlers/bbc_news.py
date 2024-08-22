@@ -57,7 +57,7 @@ def scrape_article():
             print('DDDDDDDDDDDDDDDDDDDDDDDD')
 
             # finds the date published
-            time = soup.find('time', class_='sc-2b5e3b35-2 fkLXLN').text
+            time = soup.find('time', class_='sc-2b5e3b35-2').text
             timestrings = [str(time)]
             a_date = ''
 
