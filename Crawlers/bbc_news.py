@@ -45,6 +45,13 @@ def find_articles():
 
 # scraped the article for headlines, url, images, body, and date published
 def scrape_article():
+    chrome_options = Options()
+    chrome_options.add_argument('--ignore-certificate-errors')
+    chrome_options.add_argument('--ignore-ssl-errors')
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('window-size=1920x1080')  
+
+    driver = webdriver.Chrome(options=chrome_options)
     # stores all the article data
     article_db = []
     # scrapes the article
@@ -56,14 +63,14 @@ def scrape_article():
             soup = BeautifulSoup(response.text, 'lxml')
             print('DDDDDDDDDDDDDDDDDDDDDDDD')
             # finds the date published
-            time = soup.find('div', attrs={'data-component': "byline-block"})
-            print(time)
-            timestrings = [str(time)]
-            a_date = ''
+            #time = soup.find('div', attrs={'data-component': "byline-block"})
+            #print(time)
+            #timestrings = [str(time)]
+            #a_date = ''
 
-            for timestring in timestrings:
-                dt = dateparser.parse(timestring)
-                a_date = dt.strftime("%Y-%m-%d")
+            #for timestring in timestrings:
+            #    dt = dateparser.parse(timestring)
+            #    a_date = dt.strftime("%Y-%m-%d")
             print('BBBBBBBBBBBBBBBBBBB')
             # creates a list of all the body text
             body_list = [i.text for i in soup.find_all('p', class_ = 'sc-eb7bd5f6-0 fYAfXe')]
