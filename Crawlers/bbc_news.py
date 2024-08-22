@@ -51,7 +51,7 @@ def scrape_article():
     for article in find_articles():
         try:
             print('HHHHHHHHHHHHHHHHHH')
-            headline = article.find('h2',class_='sc-2c72d884-3').text
+            headline = article.find('h2', attrs={'data-testid': 'card-headline'}).text
             print('UUUUUUUUUUUUUUUUUUUUUUUUU')
 
             url = 'https://www.bbc.com' + article.find('a',class_='sc-5e33cc43-0 jZSdZm')['href']
