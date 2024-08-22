@@ -54,11 +54,11 @@ def scrape_article():
             url = 'https://www.bbc.com' + article.find('a', attrs={'data-testid': 'internal-link'})['href']
             response = requests.get(url)
             soup = BeautifulSoup(response.text, 'lxml')
-            print(url, response, soup)
             print('DDDDDDDDDDDDDDDDDDDDDDDD')
 
             # finds the date published
-            time = soup.find('time').text
+            time = soup.find('a', attrs={'data-testid': 'byline-new'})
+            print(time)
             timestrings = [str(time)]
             a_date = ''
 
