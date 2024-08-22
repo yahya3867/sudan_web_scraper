@@ -45,13 +45,6 @@ def find_articles():
 
 # scraped the article for headlines, url, images, body, and date published
 def scrape_article():
-    chrome_options = Options()
-    chrome_options.add_argument('--ignore-certificate-errors')
-    chrome_options.add_argument('--ignore-ssl-errors')
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument('window-size=1920x1080')  
-
-    driver = webdriver.Chrome(options=chrome_options)
     # stores all the article data
     article_db = []
     # scrapes the article
@@ -59,12 +52,11 @@ def scrape_article():
         try:
             headline = article.find('h2', attrs={'data-testid': 'card-headline'}).text
             url = 'https://www.bbc.com' + article.find('a', attrs={'data-testid': 'internal-link'})['href']
+            time = article.find('span', attrs={'data-testid': "card-metadata-lastupdated"}).text
+            print(time, headline)
             response = requests.get(url)
             soup = BeautifulSoup(response.text, 'lxml')
             # finds the date published
-            driver.get(url)
-            time = driver.find_element(By.TAG_NAME, 'time').text
-            print(time)
             timestrings = [str(time)]
             a_date = ''
 
@@ -72,7 +64,7 @@ def scrape_article():
                 dt = dateparser.parse(timestring)
                 a_date = dt.strftime("%Y-%m-%d")
             # creates a list of all the body text
-            body_list = [i.text for i in soup.find_all('p', class_ = 'sc-eb7bd5f6-0 fYAfXe')]
+            #body_list = [i.text for i in soup.find_all('p', class_ = 'sc-eb7bd5f6-0 fYAfXe')]
 
             # combines it as one cohesive paragraph
             body = ''
