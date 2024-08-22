@@ -50,11 +50,9 @@ def scrape_article():
     # scrapes the article
     for article in find_articles():
         try:
-            print('HHHHHHHHHHHHHHHHHH')
             headline = article.find('h2', attrs={'data-testid': 'card-headline'}).text
             print('UUUUUUUUUUUUUUUUUUUUUUUUU')
-
-            url = 'https://www.bbc.com' + article.find('a',class_='sc-5e33cc43-0 jZSdZm')['href']
+            url = 'https://www.bbc.com' + article.find('a', attrs={'data-testid': 'internal-link'})['href']
             response = requests.get(url)
             soup = BeautifulSoup(response.text, 'lxml')
             print('DDDDDDDDDDDDDDDDDDDDDDDD')
