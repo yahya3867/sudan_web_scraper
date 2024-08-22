@@ -55,9 +55,8 @@ def scrape_article():
             response = requests.get(url)
             soup = BeautifulSoup(response.text, 'lxml')
             print('DDDDDDDDDDDDDDDDDDDDDDDD')
-
             # finds the date published
-            time = soup.find('article')
+            time = soup.find('div', attrs={'data-component': "byline-block"})
             print(time)
             timestrings = [str(time)]
             a_date = ''
