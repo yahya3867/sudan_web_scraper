@@ -41,8 +41,6 @@ def find_articles():
     # finds all the articles on that page
     articles = soup.find('div', class_= "sc-93223220-0 sc-da05643e-1 fiJvSm djXsFQ").find_all('div', class_ = False)
 
-    print(articles)
-
     return articles
 
 # scraped the article for headlines, url, images, body, and date published
@@ -90,8 +88,9 @@ def scrape_article():
             }
             # stores it into the list    
             article_db.append(db_data)
-        except:
-            pass
+        except Exception as e:
+            print(e)
+            
     return article_db
 
 def init_run():
