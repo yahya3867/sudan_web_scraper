@@ -39,7 +39,7 @@ def find_articles():
     soup = BeautifulSoup(response.text, 'lxml')
  
     # finds all the articles on that page
-    articles = soup.find('div', class_= "sc-93223220-0 sc-da05643e-1 fiJvSm djXsFQ").find_all('div', class_ = False)
+    articles = soup.find_all('div', attrs={'data-testid': 'liverpool-card'})
 
     return articles
 
