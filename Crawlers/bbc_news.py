@@ -57,7 +57,7 @@ def scrape_article():
             print('DDDDDDDDDDDDDDDDDDDDDDDD')
 
             # finds the date published
-            time = soup.find('div', attrs={'data-testid': 'byline-new'}).find('time').text
+            time = soup.find('time').text
             timestrings = [str(time)]
             a_date = ''
 
