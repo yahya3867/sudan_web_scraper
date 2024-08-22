@@ -61,17 +61,16 @@ def scrape_article():
             url = 'https://www.bbc.com' + article.find('a', attrs={'data-testid': 'internal-link'})['href']
             response = requests.get(url)
             soup = BeautifulSoup(response.text, 'lxml')
-            print('DDDDDDDDDDDDDDDDDDDDDDDD')
             # finds the date published
-            #time = soup.find('div', attrs={'data-component': "byline-block"})
-            #print(time)
-            #timestrings = [str(time)]
-            #a_date = ''
+            driver.get(url)
+            time = driver.find_element(By.TAG_NAME, 'time').text
+            print(time)
+            timestrings = [str(time)]
+            a_date = ''
 
-            #for timestring in timestrings:
-            #    dt = dateparser.parse(timestring)
-            #    a_date = dt.strftime("%Y-%m-%d")
-            print('BBBBBBBBBBBBBBBBBBB')
+            for timestring in timestrings:
+                dt = dateparser.parse(timestring)
+                a_date = dt.strftime("%Y-%m-%d")
             # creates a list of all the body text
             body_list = [i.text for i in soup.find_all('p', class_ = 'sc-eb7bd5f6-0 fYAfXe')]
 
@@ -80,7 +79,6 @@ def scrape_article():
             for i in range(0, len(body_list)):
                 body += body_list[i]
                 body += ' '
-            print('IIIIIIIIIIIIIIIIIIIIII')
             # Find the image urls
             image_urls = soup.find_all('img')
             image_urls = [i['src'] for i in image_urls]
