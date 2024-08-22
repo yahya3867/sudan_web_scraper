@@ -78,7 +78,7 @@ def scrape_article():
             db_data = {'source': SOURCE,
                 'headline': headline,
                 'web_url': url,
-                'date': a_date,
+                'date': identify_date_format(a_date).strftime('%Y/%m/%d'),
                 'body': html.unescape(str(body)).replace('\xa0', '').replace('\r\n', '').strip(),
                 'image_urls': image_urls,
                 'archive_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -157,7 +157,7 @@ def init_run():
                     db_data = {'source': SOURCE,
                         'headline': headline,
                         'web_url': url,
-                        'date': a_date,
+                        'date': identify_date_format(a_date).strftime('%Y/%m/%d'),
                         'body': html.unescape(str(body)).replace('\xa0', '').replace('\r\n', '').strip(),
                         'image_urls': image_urls,
                         'archive_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
