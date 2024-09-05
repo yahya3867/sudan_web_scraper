@@ -24,12 +24,17 @@ def connect_to_mongo():
 
     return db
 
-def get_documents(collection):
-    return collection.find()
+def get_documents(collection, source = None):
+    # Find docs from a specific source
+    if source:
+        return collection.find({'source': source})
+
+    else:
+        return collection.find()
 
 def identify_date_format(date_string):
     try:
-        matches = list(datefinder.find_dates(date_string))
+        matches = list(datefinder.find_dates(str(date_string)))
         if matches:
             return matches[0]
         return None
@@ -38,9 +43,7 @@ def identify_date_format(date_string):
         print(f"Error parsing date: {e}")
         return None
 
-def update_documents(collection, non_identified_dates):
-    documents = get_documents(collection)
-
+def update_documents(collection, non_identified_dates, documents):
     article_number = 1
     for document in documents:
         print(f"Processing article: {article_number}")
@@ -57,9 +60,24 @@ def update_documents(collection, non_identified_dates):
         
     print(non_identified_dates)
 
-db = connect_to_mongo()
-article_collection = db[os.getenv('MONGO_ARTICLE_COLLECTION')]
-update_documents(article_collection, non_identified_dates)
+def main(method):
+    if method == 1:
+        db = connect_to_mongo()
+        article_collection = db[os.getenv('MONGO_ARTICLE_COLLECTION')]
+        docs = get_documents(article_collection)
+        update_documents(article_collection, non_identified_dates, docs)
 
-print("Non-identified dates:", non_identified_dates)
-print("Date standardization complete.")
+        print("Non-identified dates:", non_identified_dates)
+        print("Date standardization complete.")
+
+    else:
+        db = connect_to_mongo()
+        article_collection = db[os.getenv('MONGO_ARTICLE_COLLECTION')]
+
+        docs = get_documents(article_collection)
+        update_documents(article_collection, non_identified_dates, docs)
+
+        print("Non-identified dates:", non_identified_dates)
+        print("Date standardization complete.")
+
+main(0)
