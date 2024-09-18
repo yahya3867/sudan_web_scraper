@@ -235,13 +235,17 @@ def dynamic_crawler(articles, trial):
     # Store the times
     store_times(documents)
 
-def get_lists():
-    dynamic_urls = pd.read_csv('sudan_war_dynamic_urls.csv')
-    static_urls = pd.read_csv('sudan_war_static_urls.csv')
+def get_lists(num_articles=NUM_ARTICLES):
+    dynamic_urls = pd.read_csv('al-taghyeer.csv')
+    static_urls = pd.read_csv('radio-dabanga`.csv')
 
-    # Randomly select NUM_ARTICLES number of static and dynamic URLs
-    static_urls = static_urls.sample(n=NUM_ARTICLES)
-    dynamic_urls = dynamic_urls.sample(n=NUM_ARTICLES)
+    # Get length of both lists
+    dynamic_length = len(dynamic_urls)
+    static_length = len(static_urls)
+
+    # Randomly select num_articles number of static and dynamic URLs
+    static_urls = static_urls.sample(n={num_articles if num_articles < static_length else static_length})
+    dynamic_urls = dynamic_urls.sample(n={num_articles if num_articles < dynamic_length else dynamic_length})
 
     # Reset the index
     static_urls.reset_index(drop=True, inplace=True)
